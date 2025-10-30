@@ -1,10 +1,166 @@
 # pdichiaro/rnaseq: Usage
 
-## Pipeline parameters
+## 🚀 Quick Start
+
+### Mandatory Parameters
+
+To run the pipeline, you **must** provide these essential parameters:
+
+```bash
+nextflow run pdichiaro/rnaseq \
+    --input samplesheet.csv \        # ✅ REQUIRED: Path to sample sheet
+    --outdir <output_directory> \    # ✅ REQUIRED: Output directory
+    -profile <docker/singularity/conda/institute>  # ✅ REQUIRED: Execution profile
+```
+
+### ⚠️ Critical Requirements
+
+| Parameter | Status | Description | Default |
+|-----------|--------|-------------|---------|
+| `--input` | **🔴 MANDATORY** | Path to samplesheet CSV file | `null` |
+| `--outdir` | **🔴 MANDATORY** | Output directory path | `null` |
+| `-profile` | **🔴 MANDATORY** | Execution environment (docker/singularity/conda) | None |
+
+### 🔧 Reference Genome Requirements
+
+**Choose ONE of the following options:**
+
+#### Option A: Use iGenomes Reference (Recommended)
+```bash
+--genome GRCh38  # ✅ Pre-built reference (human)
+--genome GRCm38  # ✅ Pre-built reference (mouse)  
+--genome <genome_id>  # ✅ See available genomes below
+```
+
+#### Option B: Provide Custom References
+```bash
+--fasta genome.fasta     # 🔶 MANDATORY if no --genome
+--gtf annotation.gtf     # 🔶 MANDATORY if no --genome
+```
+
+### 💡 Minimal Working Example
+
+```bash
+# Using iGenomes reference (simplest)
+nextflow run pdichiaro/rnaseq \
+    --input samplesheet.csv \
+    --outdir results \
+    --genome GRCh38 \
+    -profile docker
+
+# Using custom references
+nextflow run pdichiaro/rnaseq \
+    --input samplesheet.csv \
+    --outdir results \
+    --fasta genome.fasta \
+    --gtf annotation.gtf \
+    -profile docker
+```
+
+## Pipeline Parameters
 
 Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration except for parameters; see [docs](https://nf-co.re/usage/configuration#custom-configuration-files).
 
-## Samplesheet input
+## 📋 Parameter Categories
+
+### 🔴 **MANDATORY PARAMETERS**
+These parameters **MUST** be provided for the pipeline to run:
+
+- `--input`: Path to samplesheet CSV file
+- `--outdir`: Output directory path  
+- `-profile`: Execution environment
+
+### 🔶 **CONDITIONALLY MANDATORY PARAMETERS**
+These parameters are required under specific conditions:
+
+#### Reference Genome (Choose ONE):
+- `--genome <genome_id>` **OR** (`--fasta` **AND** `--gtf`)
+- If using `--genome`, it must be a valid iGenomes ID
+- If not using `--genome`, both `--fasta` and `--gtf` are mandatory
+
+#### UMI Analysis:
+- `--umitools_bc_pattern` ➜ **MANDATORY** if `--with_umi true`
+
+#### Contamination Screening:
+- `--bbsplit_fasta_list` ➜ **MANDATORY** if `--skip_bbsplit false`
+- `--kraken_db` ➜ **MANDATORY** if `--contaminant_screening kraken2`
+
+### ✅ **OPTIONAL PARAMETERS**
+All other parameters have sensible defaults and are optional.
+
+## 🧬 Available iGenomes References
+
+### Human Genomes
+- `GRCh38` - Human genome (NCBI GRCh38/hg38) ✅ **Recommended**
+- `GRCh37` - Human genome (NCBI GRCh37/hg19)
+- `CHM13` - T2T human genome reference
+
+### Mouse Genomes  
+- `GRCm39` - Mouse genome (NCBI GRCm39/mm39) ✅ **Recommended**
+- `GRCm38` - Mouse genome (NCBI GRCm38/mm10)
+
+### Other Model Organisms
+- `CanFam3.1` - Dog genome
+- `dm6` - Drosophila melanogaster
+- `ce11` - C. elegans
+- `sacCer3` - S. cerevisiae
+- And many more... (see [iGenomes](https://support.illumina.com/sequencing/sequencing_software/igenome.html))
+
+## 🎯 Common Usage Patterns
+
+### Standard RNA-seq Analysis
+```bash
+nextflow run pdichiaro/rnaseq \
+    --input samplesheet.csv \
+    --outdir results \
+    --genome GRCh38 \
+    -profile docker
+```
+
+### UMI-based Analysis
+```bash
+nextflow run pdichiaro/rnaseq \
+    --input samplesheet.csv \
+    --outdir results \
+    --genome GRCh38 \
+    --with_umi \
+    --umitools_bc_pattern 'NNNNNNNN' \
+    -profile docker
+```
+
+### Single-end Reads
+```bash
+nextflow run pdichiaro/rnaseq \
+    --input samplesheet.csv \
+    --outdir results \
+    --genome GRCh38 \
+    --single_end \
+    -profile docker
+```
+
+### Custom Genome with Salmon Quantification
+```bash
+nextflow run pdichiaro/rnaseq \
+    --input samplesheet.csv \
+    --outdir results \
+    --fasta genome.fasta \
+    --gtf annotation.gtf \
+    --pseudo_aligner salmon \
+    --skip_alignment \
+    -profile docker
+```
+
+### Skip Quality Control Steps
+```bash
+nextflow run pdichiaro/rnaseq \
+    --input samplesheet.csv \
+    --outdir results \
+    --genome GRCh38 \
+    --skip_qc \
+    -profile docker
+```
+
+## 📝 Samplesheet input
 
 You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 4 columns, and a header row as shown in the examples below.
 
@@ -627,6 +783,123 @@ If `-profile` is not specified, the pipeline will run locally and expect all sof
 - `docker`
   - A generic configuration profile to be used with [Docker](https://docker.com/)
 - `singularity`
+
+## 📊 Complete Parameter Reference
+
+### 🔴 Mandatory Parameters
+
+| Parameter | Type | Description | Example |
+|-----------|------|-------------|---------|
+| `--input` | path | Path to samplesheet CSV | `samplesheet.csv` |
+| `--outdir` | path | Output directory | `results/` |
+
+### 🔶 Conditionally Mandatory Parameters
+
+| Parameter | Condition | Type | Description |
+|-----------|-----------|------|-------------|
+| `--genome` | If no custom refs | string | iGenomes reference ID |
+| `--fasta` | If no --genome | path | Genome FASTA file |
+| `--gtf` | If no --genome | path | Gene annotation GTF |
+| `--umitools_bc_pattern` | If --with_umi | string | UMI barcode pattern |
+| `--bbsplit_fasta_list` | If not --skip_bbsplit | path | BBSplit reference list |
+| `--kraken_db` | If contaminant screening | path | Kraken2 database |
+
+### ✅ Key Optional Parameters
+
+| Category | Parameter | Default | Description |
+|----------|-----------|---------|-------------|
+| **Alignment** | `--aligner` | `star` | Alignment method (star/hisat2) |
+| | `--quantification` | `salmon` | Quantification method |
+| | `--pseudo_aligner` | `null` | Pseudo-aligner (salmon/kallisto) |
+| **Quality** | `--trimmer` | `trimgalore` | Trimming tool |
+| | `--min_trimmed_reads` | `10000` | Min reads after trimming |
+| | `--skip_qc` | `false` | Skip all QC steps |
+| **Analysis** | `--with_umi` | `false` | Enable UMI analysis |
+| | `--stranded_threshold` | `0.8` | Strandedness detection |
+| | `--normalization_method` | `all_genes` | DESeq2 normalization |
+
+### 🚫 Skip Options (All default to false)
+
+- `--skip_trimming` - Skip read trimming
+- `--skip_alignment` - Skip alignment steps  
+- `--skip_pseudo_alignment` - Skip pseudo-alignment
+- `--skip_markduplicates` - Skip duplicate marking
+- `--skip_stringtie` - Skip StringTie assembly
+- `--skip_fastqc` - Skip FastQC reports
+- `--skip_multiqc` - Skip MultiQC report
+- `--skip_deseq2_qc` - Skip DESeq2 QC plots
+- `--skip_biotype_qc` - Skip biotype QC
+- `--skip_dupradar` - Skip dupRadar analysis
+- `--skip_preseq` - Skip Preseq analysis
+- `--skip_qualimap` - Skip Qualimap QC
+- `--skip_rseqc` - Skip RSeQC analysis
+
+### 💾 Save Options (All default to false)
+
+- `--save_reference` - Save generated indices
+- `--save_trimmed` - Save trimmed reads
+- `--save_unaligned` - Save unaligned reads
+- `--save_align_intermeds` - Save intermediate BAMs
+- `--save_merged_fastq` - Save merged FASTQ files
+
+## ⚠️ Important Notes
+
+1. **Profile is mandatory**: Always specify `-profile docker`, `-profile singularity`, or similar
+2. **Reference genome**: Either use `--genome` or provide both `--fasta` and `--gtf`
+3. **UMI analysis**: If using `--with_umi`, you must specify `--umitools_bc_pattern`
+4. **Resource requirements**: Ensure adequate memory/CPU for your dataset size
+5. **Output permissions**: Ensure write access to the `--outdir` location
+
+## 🔧 Parameter Validation & Common Errors
+
+### Error Messages & Solutions
+
+| Error Message | Cause | Solution |
+|---------------|-------|----------|
+| `ERROR: Required parameter '--input' not specified` | Missing input file | Add `--input samplesheet.csv` |
+| `ERROR: Required parameter '--outdir' not specified` | Missing output directory | Add `--outdir results` |
+| `ERROR: No suitable profile found` | Missing execution profile | Add `-profile docker` |
+| `Input file does not exist` | Invalid input path | Check file path and permissions |
+| `Genome 'xyz' not found in iGenomes` | Invalid genome ID | Use valid ID or custom refs |
+| `UMI pattern required when --with_umi is true` | Missing UMI pattern | Add `--umitools_bc_pattern` |
+
+### Parameter Validation Rules
+
+✅ **Valid Combinations:**
+```bash
+# iGenomes reference
+--genome GRCh38
+
+# Custom reference (both required)
+--fasta genome.fa --gtf genes.gtf
+
+# UMI analysis (pattern required)
+--with_umi --umitools_bc_pattern 'NNNN'
+```
+
+❌ **Invalid Combinations:**
+```bash
+# Missing output directory
+--input file.csv  # ERROR: --outdir required
+
+# Incomplete custom reference
+--fasta genome.fa  # ERROR: --gtf also required
+
+# UMI without pattern  
+--with_umi  # ERROR: --umitools_bc_pattern required
+```
+
+## 🎯 Quick Validation Checklist
+
+Before running the pipeline, ensure:
+
+- [ ] `--input` points to valid CSV file
+- [ ] `--outdir` directory is writable
+- [ ] `-profile` is specified
+- [ ] Reference genome is provided (`--genome` OR `--fasta`+`--gtf`)
+- [ ] If `--with_umi`, then `--umitools_bc_pattern` is set
+- [ ] Sample sheet follows correct format
+- [ ] All input FASTQ files exist and are accessible
   - A generic configuration profile to be used with [Singularity](https://sylabs.io/docs/)
 - `podman`
   - A generic configuration profile to be used with [Podman](https://podman.io/)
