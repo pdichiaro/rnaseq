@@ -17,6 +17,8 @@ include { NORMALIZE_DESEQ2_QC_ALL_GENES as NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO 
 include { MULTIQC_CUSTOM_BIOTYPE             } from '../../modules/local/multiqc_custom_biotype'
 include { GENOME_COUNT                       } from '../../modules/local/genome_count'
 include { MERGE_GENOME_COUNTS                } from '../../modules/local/merge_genome_counts'
+include { MERGE_GENOME_COUNTS as MERGE_GENOME_COUNTS_HISAT2 } from '../../modules/local/merge_genome_counts'
+include { MERGE_GENOME_COUNTS as MERGE_GENOME_COUNTS_FEATURES } from '../../modules/local/merge_genome_counts'
 include { DEEPTOOLS_BIGWIG_NORM              } from '../../modules/local/deeptools_bw_norm'
 
 //
@@ -507,17 +509,17 @@ workflow RNASEQ {
             ch_versions = ch_versions.mix(SUBREAD_FEATURECOUNTS.out.versions.first())
 
             // Merge genome-based counts from all samples
-            MERGE_GENOME_COUNTS (
+            MERGE_GENOME_COUNTS_HISAT2 (
                 SUBREAD_FEATURECOUNTS.out.counts.map { meta, counts -> counts }.collect(),
                 "exon,intron,gene",
                 ch_annotation_matrix
             )
-            ch_versions = ch_versions.mix(MERGE_GENOME_COUNTS.out.versions)
+            ch_versions = ch_versions.mix(MERGE_GENOME_COUNTS_HISAT2.out.versions)
 
             if (!params.skip_qc & !params.skip_deseq2_qc) {
                 if (params.normalization_method == 'invariant_genes') {
                     NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT (
-                        MERGE_GENOME_COUNTS.out.merged_counts.first(),
+                        MERGE_GENOME_COUNTS_HISAT2.out.merged_counts.first(),
                         ch_pca_header_multiqc,
                         ch_clustering_header_multiqc
                     )
@@ -527,7 +529,7 @@ workflow RNASEQ {
                     ch_scaling_factors = ch_scaling_factors.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors)
                 } else {
                     NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT (
-                        MERGE_GENOME_COUNTS.out.merged_counts.first(),
+                        MERGE_GENOME_COUNTS_HISAT2.out.merged_counts.first(),
                         ch_pca_header_multiqc,
                         ch_clustering_header_multiqc
                     )
@@ -602,12 +604,12 @@ workflow RNASEQ {
         ch_versions = ch_versions.mix(GENOME_COUNT.out.versions)
         
         // Merge counts from all samples
-        MERGE_GENOME_COUNTS (
+        MERGE_GENOME_COUNTS_FEATURES (
             GENOME_COUNT.out.combined_counts.map { meta, counts -> counts }.collect(),
             "transcript,intron,exon,5utr,3utr",
             ch_annotation_matrix
         )
-        ch_versions = ch_versions.mix(MERGE_GENOME_COUNTS.out.versions)
+        ch_versions = ch_versions.mix(MERGE_GENOME_COUNTS_FEATURES.out.versions)
     }
 
     //

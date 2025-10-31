@@ -1,0 +1,37 @@
+Oct-31 15:37:27.542 [main] DEBUG nextflow.cli.Launcher - $> nextflow run workflows/rnaseq/main.nf --help
+Oct-31 15:37:27.699 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 25.04.7
+Oct-31 15:37:27.815 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/user/.nextflow/plugins; core-plugins: nf-amazon@2.15.0-patch1,nf-azure@1.16.0-patch1,nf-cloudcache@0.4.3,nf-codecommit@0.2.3,nf-console@1.2.1,nf-google@1.21.1,nf-k8s@1.0.0,nf-tower@1.11.4-patch1,nf-wave@1.12.1
+Oct-31 15:37:27.885 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Oct-31 15:37:27.887 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Oct-31 15:37:27.893 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
+Oct-31 15:37:27.918 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Oct-31 15:37:27.960 [main] DEBUG nextflow.config.ConfigBuilder - Found config base: /home/user/rnaseq/workflows/rnaseq/nextflow.config
+Oct-31 15:37:27.964 [main] DEBUG nextflow.config.ConfigBuilder - Found config local: /home/user/rnaseq/nextflow.config
+Oct-31 15:37:27.968 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /home/user/rnaseq/workflows/rnaseq/nextflow.config
+Oct-31 15:37:27.969 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /home/user/rnaseq/nextflow.config
+Oct-31 15:37:28.025 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /home/user/.nextflow/secrets/store.json
+Oct-31 15:37:28.033 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@27aae97b] - activable => nextflow.secret.LocalSecretsProvider@27aae97b
+Oct-31 15:37:28.067 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `standard`
+Oct-31 15:37:31.559 [main] DEBUG nextflow.config.ConfigBuilder - In the following config snippet the attribute `params.skip_qc` is empty:
+  help=true
+
+Oct-31 15:37:31.565 [main] ERROR nextflow.cli.Launcher - Unknown config attribute `params.skip_qc` -- check config file: /home/user/rnaseq/workflows/rnaseq/nextflow.config
+nextflow.exception.ConfigParseException: Unknown config attribute `params.skip_qc` -- check config file: /home/user/rnaseq/workflows/rnaseq/nextflow.config
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.config.ConfigBuilder.validate(ConfigBuilder.groovy:462)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.config.ConfigBuilder.validate(ConfigBuilder.groovy:469)
+	at nextflow.config.ConfigBuilder.validate(ConfigBuilder.groovy:449)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.config.ConfigBuilder.merge0(ConfigBuilder.groovy:419)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.config.ConfigBuilder.buildConfig0(ConfigBuilder.groovy:374)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.config.ConfigBuilder.buildGivenFiles(ConfigBuilder.groovy:318)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.config.ConfigBuilder.buildConfigObject(ConfigBuilder.groovy:816)
+	at org.codehaus.groovy.vmplugin.v8.IndyInterface.fromCache(IndyInterface.java:321)
+	at nextflow.config.ConfigBuilder.build(ConfigBuilder.groovy:829)
+	at nextflow.cli.CmdRun.run(CmdRun.groovy:333)
+	at nextflow.cli.Launcher.run(Launcher.groovy:513)
+	at nextflow.cli.Launcher.main(Launcher.groovy:673)
