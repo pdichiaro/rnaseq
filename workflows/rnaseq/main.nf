@@ -50,6 +50,8 @@ include { PRESEQ_LCEXTRAP            } from '../../modules/nf-core/preseq/lcextr
 include { QUALIMAP_RNASEQ            } from '../../modules/nf-core/qualimap/rnaseq'
 include { STRINGTIE_STRINGTIE        } from '../../modules/nf-core/stringtie/stringtie'
 include { SUBREAD_FEATURECOUNTS      } from '../../modules/nf-core/subread/featurecounts'
+include { SUBREAD_FEATURECOUNTS as SUBREAD_FEATURECOUNTS_HISAT2 } from '../../modules/nf-core/subread/featurecounts'
+include { SUBREAD_FEATURECOUNTS as SUBREAD_FEATURECOUNTS_EXTRA } from '../../modules/nf-core/subread/featurecounts'
 include { KRAKEN2_KRAKEN2 as KRAKEN2 } from '../../modules/nf-core/kraken2/kraken2/main'
 include { BRACKEN_BRACKEN as BRACKEN } from '../../modules/nf-core/bracken/bracken/main'
 include { MULTIQC                    } from '../../modules/nf-core/multiqc'
@@ -503,14 +505,14 @@ workflow RNASEQ {
         // Note: HISAT2 only supports genome quantification
         //
         if (params.quantification == 'genome' && !params.skip_quantification_method) {
-            SUBREAD_FEATURECOUNTS (
+            SUBREAD_FEATURECOUNTS_HISAT2 (
                 ch_genome_bam.combine(ch_gtf)
             )
-            ch_versions = ch_versions.mix(SUBREAD_FEATURECOUNTS.out.versions.first())
+            ch_versions = ch_versions.mix(SUBREAD_FEATURECOUNTS_HISAT2.out.versions.first())
 
             // Merge genome-based counts from all samples
             MERGE_GENOME_COUNTS_HISAT2 (
-                SUBREAD_FEATURECOUNTS.out.counts.map { meta, counts -> counts }.collect(),
+                SUBREAD_FEATURECOUNTS_HISAT2.out.counts.map { meta, counts -> counts }.collect(),
                 "exon,intron,gene",
                 ch_annotation_matrix
             )
@@ -671,13 +673,13 @@ workflow RNASEQ {
             .map { it[0..<it.size()-1] }
             .set { ch_featurecounts }
 
-        SUBREAD_FEATURECOUNTS (
+        SUBREAD_FEATURECOUNTS_EXTRA (
             ch_featurecounts
         )
-        ch_versions = ch_versions.mix(SUBREAD_FEATURECOUNTS.out.versions.first())
+        ch_versions = ch_versions.mix(SUBREAD_FEATURECOUNTS_EXTRA.out.versions.first())
 
         MULTIQC_CUSTOM_BIOTYPE (
-            SUBREAD_FEATURECOUNTS.out.counts,
+            SUBREAD_FEATURECOUNTS_EXTRA.out.counts,
             ch_biotypes_header_multiqc
         )
         ch_multiqc_files = ch_multiqc_files.mix(MULTIQC_CUSTOM_BIOTYPE.out.tsv.collect{it[1]})
