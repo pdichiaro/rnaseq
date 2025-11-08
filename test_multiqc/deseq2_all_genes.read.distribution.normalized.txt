@@ -1,0 +1,4 @@
+sample	value
+sample1	5.2
+sample2	5.8
+sample3	5.5

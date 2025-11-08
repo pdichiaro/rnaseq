@@ -1,0 +1,70 @@
+================================================================================
+                    MULTIQC DESEQ2 HIERARCHICAL STRUCTURE
+================================================================================
+
+MultiQC Report
+│
+├── [Other Sections...]
+│
+├── 📊 DESeq2
+│   ├── 📁 All Genes Normalization (Standard DESeq2)
+│   │   │
+│   │   ├── 1️⃣  Read Distribution
+│   │   │    📊 Box plot showing normalized read counts
+│   │   │    📄 File: deseq2_all_genes.read.distribution.normalized.txt
+│   │   │
+│   │   ├── 2️⃣  Sample Distance Heatmap
+│   │   │    🔥 Heatmap showing sample-to-sample Euclidean distances
+│   │   │    📄 File: deseq2_all_genes.sample.dists.txt
+│   │   │
+│   │   ├── 3️⃣  PCA Plot (All Genes)
+│   │   │    📈 Scatter plot (PC1 vs PC2) using all genes
+│   │   │    📄 File: deseq2_all_genes.pca.vals.txt
+│   │   │
+│   │   └── 4️⃣  PCA Plot (Top 500 Variable Genes)
+│   │        📈 Scatter plot (PC1 vs PC2) using top 500 most variable genes
+│   │        📄 File: deseq2_all_genes.pca.top500.vals.txt
+│   │
+│   └── 📁 Invariant Genes Normalization (RUVSeq with housekeeping genes)
+│       │
+│       ├── 1️⃣  Read Distribution
+│       │    📊 Box plot showing normalized read counts
+│       │    📄 File: deseq2_invariant.read.distribution.normalized.txt
+│       │
+│       ├── 2️⃣  Sample Distance Heatmap
+│       │    🔥 Heatmap showing sample-to-sample Euclidean distances
+│       │    📄 File: deseq2_invariant.sample.dists.txt
+│       │
+│       ├── 3️⃣  PCA Plot (All Genes)
+│       │    📈 Scatter plot (PC1 vs PC2) using all genes
+│       │    📄 File: deseq2_invariant.pca.vals.txt
+│       │
+│       └── 4️⃣  PCA Plot (Top 500 Variable Genes)
+│            📈 Scatter plot (PC1 vs PC2) using top 500 most variable genes
+│            📄 File: deseq2_invariant.pca.top500.vals.txt
+│
+└── [Other Sections...]
+
+================================================================================
+                              CONFIGURATION MAPPING
+================================================================================
+
+Section Hierarchy:
+  deseq2                        → Main DESeq2 section
+  ├── deseq2_all_genes_section  → All Genes Normalization subsection
+  └── deseq2_invariant_section  → Invariant Genes Normalization subsection
+
+Plot Configuration IDs:
+  All Genes:
+    - deseq2_read_dist_all_genes       → parent_id: deseq2_all_genes_section
+    - deseq2_sample_distance_all_genes → parent_id: deseq2_all_genes_section
+    - deseq2_pca_all_genes_method      → parent_id: deseq2_all_genes_section
+    - deseq2_pca_500_all_genes_method  → parent_id: deseq2_all_genes_section
+
+  Invariant Genes:
+    - deseq2_read_dist_invariant       → parent_id: deseq2_invariant_section
+    - deseq2_sample_distance_invariant → parent_id: deseq2_invariant_section
+    - deseq2_pca_invariant_method      → parent_id: deseq2_invariant_section
+    - deseq2_pca_500_invariant_method  → parent_id: deseq2_invariant_section
+
+================================================================================

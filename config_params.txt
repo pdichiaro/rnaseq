@@ -1,0 +1,214 @@
+        apptainer.autoMounts    = true
+        apptainer.enabled       = false
+        apptainer.enabled       = false
+        apptainer.enabled       = false
+        apptainer.enabled       = false
+        apptainer.enabled       = false
+        apptainer.enabled       = false
+        apptainer.enabled       = false
+        apptainer.enabled       = true
+        apptainer.ociAutoPull   = true
+        apptainer.runOptions    = '--nv'
+        charliecloud.enabled    = false
+        charliecloud.enabled    = false
+        charliecloud.enabled    = false
+        charliecloud.enabled    = false
+        charliecloud.enabled    = false
+        charliecloud.enabled    = false
+        charliecloud.enabled    = false
+        charliecloud.enabled    = true
+        conda.channels          = ['conda-forge', 'bioconda']
+        conda.enabled           = false
+        conda.enabled           = false
+        conda.enabled           = false
+        conda.enabled           = false
+        conda.enabled           = false
+        conda.enabled           = false
+        conda.enabled           = true
+        conda.enabled           = true
+        conda.useMamba          = true
+        docker.enabled          = false
+        docker.enabled          = false
+        docker.enabled          = false
+        docker.enabled          = false
+        docker.enabled          = false
+        docker.enabled          = false
+        docker.enabled          = false
+        docker.enabled          = true
+        docker.runOptions       = '-u $(id -u):$(id -g) --gpus all'
+        docker.runOptions       = '-u $(id -u):$(id -g) --platform=linux/amd64'
+        docker.runOptions       = '-u $(id -u):$(id -g)'
+        executor.cpus           = 4
+        executor.memory         = 8.GB
+        executor.name           = 'local'
+        nextflow.enable.configProcessNamesValidation = true
+        podman.enabled          = false
+        podman.enabled          = false
+        podman.enabled          = false
+        podman.enabled          = false
+        podman.enabled          = false
+        podman.enabled          = false
+        podman.enabled          = false
+        podman.enabled          = true
+        process.beforeScript    = 'echo $HOSTNAME'
+        shifter.enabled         = false
+        shifter.enabled         = false
+        shifter.enabled         = false
+        shifter.enabled         = false
+        shifter.enabled         = false
+        shifter.enabled         = false
+        shifter.enabled         = false
+        shifter.enabled         = true
+        singularity.autoMounts  = true
+        singularity.enabled     = false
+        singularity.enabled     = false
+        singularity.enabled     = false
+        singularity.enabled     = false
+        singularity.enabled     = false
+        singularity.enabled     = false
+        singularity.enabled     = false
+        singularity.enabled     = true
+        singularity.ociAutoPull = true
+        singularity.runOptions  = '--nv'
+        wave.enabled            = true
+        wave.freeze             = true
+        wave.strategy           = 'conda,container'
+JULIA_DEPOT_PATH
+PYTHONNOUSERSITE
+R_ENVIRON_USER
+R_PROFILE_USER
+afterText
+apptainer.registry    = 'quay.io'
+bam_csi_index
+bbsplit_fasta_list
+beforeText
+beforeText
+bracken_precision
+charliecloud.registry = 'quay.io'
+cleanup
+command
+config_profile_contact
+config_profile_description
+config_profile_name
+config_profile_url
+contaminant_screening
+contributors
+custom_config_version
+defaultBranch
+defaultIgnoreParams
+description
+deseq2_vst
+docker.registry       = 'quay.io'
+dumpHashes
+email
+email_on_fail
+enabled
+enabled
+enabled
+enabled
+enabled
+extra_fastp_args
+extra_fqlint_args
+extra_kallisto_quant_args
+extra_salmon_quant_args
+extra_star_align_args
+extra_trimgalore_args
+featurecounts_feature_type
+featurecounts_group_type
+file
+file
+file
+file
+fullParameter
+gencode
+genome
+gtf_extra_attributes
+gtf_group_features
+help
+help_full
+hook_url
+igenomes_ignore
+input
+kallisto_quant_fraglen
+kallisto_quant_fraglen_sd
+kraken_db
+mainScript
+max_multiqc_email_size
+min_mapped_reads
+min_trimmed_reads
+monochromeLogs
+monochrome_logs
+multiqc_config
+multiqc_logo
+multiqc_methods_description
+multiqc_title
+name
+nextflow.enable.configProcessNamesValidation = false
+nextflowVersion
+outdir
+plaintext_email
+podman.registry       = 'quay.io'
+process.shell = [
+pseudo_aligner_kmer_size
+publishDir
+publish_dir_mode
+remove_ribo_rna
+resourceLimits
+ribo_database_manifest
+rseqc_modules
+salmon_quant_libtype
+save_align_intermeds
+save_bbsplit_reads
+save_kraken_assignments
+save_kraken_unassigned
+save_merged_fastq
+save_non_ribo_reads
+save_reference
+save_trimmed
+save_umi_intermeds
+save_unaligned
+seq_center
+showHiddenParameter
+show_hidden
+singularity.registry  = 'quay.io'
+skip_alignment
+skip_bbsplit
+skip_bigwig
+skip_biotype_qc
+skip_deeptools_norm
+skip_deseq2_qc
+skip_dupradar
+skip_fastqc
+skip_gtf_filter
+skip_gtf_transcript_filter
+skip_linting
+skip_markduplicates
+skip_multiqc
+skip_preseq
+skip_pseudo_alignment
+skip_qc
+skip_qualimap
+skip_quantification_method
+skip_rseqc
+skip_stringtie
+skip_trimming
+skip_umi_extract
+splicesites
+star_ignore_sjdbgtf
+stranded_threshold
+stringtie_ignore_gtf
+trimmer
+umi_dedup_tool
+umi_discard_read
+umitools_bc_pattern
+umitools_bc_pattern2
+umitools_dedup_stats
+umitools_extract_method
+umitools_grouping_method
+umitools_umi_separator
+unstranded_threshold
+use_sentieon_star
+validate_params
+version
+version
+with_umi

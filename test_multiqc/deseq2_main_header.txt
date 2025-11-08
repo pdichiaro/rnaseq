@@ -1,0 +1,11 @@
+#id: 'deseq2'
+#section_name: 'DESeq2'
+#section_anchor: 'deseq2'
+#description: "Comprehensive DESeq2 quality control and analysis results including normalization assessment, 
+#              sample relationship analysis, and principal component analysis. 
+#              These analyses are performed using <a href='https://bioconductor.org/packages/release/bioc/html/DESeq2.html'>DESeq2</a>
+#              in the <a href='https://github.com/pdichiaro/rnaseq/blob/main/bin/normalize_deseq2_qc_all_genes.r'><code>normalize_deseq2_qc_all_genes.r</code></a> and
+#              <a href='https://github.com/pdichiaro/rnaseq/blob/main/bin/normalize_deseq2_qc_invariant_genes.r'><code>normalize_deseq2_qc_invariant_genes.r</code></a> scripts."
+#info: "DESeq2 normalization and quality control analysis for both standard (all genes) and invariant genes methods."
+#plot_type: 'html'
+#anchor: 'deseq2'
