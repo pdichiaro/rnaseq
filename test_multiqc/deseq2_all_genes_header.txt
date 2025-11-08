@@ -1,2 +1,0 @@
-# DESeq2 All Genes Normalization
-# Section header for all genes normalization results
