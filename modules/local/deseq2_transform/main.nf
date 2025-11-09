@@ -1,5 +1,6 @@
 process DESEQ2_TRANSFORM {
     label 'process_single'
+    tag "$deseq2_file"
 
     conda "conda-forge::sed=4.7"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -7,7 +8,7 @@ process DESEQ2_TRANSFORM {
         'nf-core/ubuntu:20.04' }"
 
     input:
-    path deseq2_files
+    path deseq2_file
     path pca_header
     path clustering_header
 
@@ -19,24 +20,21 @@ process DESEQ2_TRANSFORM {
     task.ext.when == null || task.ext.when
 
     script:
+    def file_name = deseq2_file.getName()
+    def base_name = file_name.replaceAll(/\.txt$/, '')
     """
-    # Transform DESeq2 PCA files
-    for pca_file in *.pca.vals.txt *pca.vals.txt; do
-        if [ -f "\$pca_file" ]; then
-            base_name=\$(basename "\$pca_file" .txt)
-            cat ${pca_header} "\$pca_file" > "\${base_name}_mqc.tsv"
-            echo "Created \${base_name}_mqc.tsv"
-        fi
-    done
-
-    # Transform DESeq2 sample distance files
-    for dist_file in *.sample.dists.txt *sample.dists.txt; do
-        if [ -f "\$dist_file" ]; then
-            base_name=\$(basename "\$dist_file" .txt)
-            cat ${clustering_header} "\$dist_file" > "\${base_name}_mqc.tsv"
-            echo "Created \${base_name}_mqc.tsv"
-        fi
-    done
+    # Determine file type and apply appropriate header
+    if [[ "${file_name}" == *".pca."* ]]; then
+        # PCA file - use PCA header
+        cat ${pca_header} ${deseq2_file} > "${base_name}_mqc.tsv"
+        echo "Created ${base_name}_mqc.tsv with PCA header"
+    elif [[ "${file_name}" == *".sample.dists."* ]]; then
+        # Sample distance file - use clustering header
+        cat ${clustering_header} ${deseq2_file} > "${base_name}_mqc.tsv"
+        echo "Created ${base_name}_mqc.tsv with clustering header"
+    else
+        echo "Warning: Unknown file type: ${file_name}"
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -46,8 +44,7 @@ process DESEQ2_TRANSFORM {
 
     stub:
     """
-    touch stub_pca.vals_mqc.tsv
-    touch stub_sample.dists_mqc.tsv
+    touch stub_mqc.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
