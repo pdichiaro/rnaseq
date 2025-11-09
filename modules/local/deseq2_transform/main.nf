@@ -11,6 +11,7 @@ process DESEQ2_TRANSFORM {
     path deseq2_file
     path pca_header
     path clustering_header
+    path read_dist_header
 
     output:
     path "*_mqc.tsv", optional: true, emit: multiqc_files
@@ -32,6 +33,10 @@ process DESEQ2_TRANSFORM {
         # Sample distance file - use clustering header
         cat ${clustering_header} ${deseq2_file} > "${base_name}_mqc.tsv"
         echo "Created ${base_name}_mqc.tsv with clustering header"
+    elif [[ "${file_name}" == *".read.distribution.normalized."* ]]; then
+        # Read distribution file - use read distribution header
+        cat ${read_dist_header} ${deseq2_file} > "${base_name}_mqc.tsv"
+        echo "Created ${base_name}_mqc.tsv with read distribution header"
     else
         echo "Warning: Unknown file type: ${file_name}"
     fi
