@@ -821,7 +821,7 @@ for (n_top_var in ntop) {
         pca_vals_mqc <- pca.data[,c("PC1","PC2")]
         colnames(pca_vals_mqc) <- paste0(colnames(pca_vals_mqc), ": ", percentVar[1:2], '% variance')
         pca_vals_mqc <- cbind(sample = rownames(pca_vals_mqc), pca_vals_mqc)
-        write.table(pca_vals_mqc, file = pca_data_file, row.names = FALSE, col.names = TRUE, sep = "\t", quote = TRUE)
+        write.table(pca_vals_mqc, file = pca_data_file, row.names = FALSE, col.names = TRUE, sep = "\t", quote = FALSE)
         cat("PCA data for interactive MultiQC plot saved:", pca_data_file, "\n")
         
         # PDF for organized storage (Quality_Control folder)
@@ -834,7 +834,7 @@ for (n_top_var in ntop) {
         pca_vals_mqc <- pca.data[,c("PC1","PC2")]
         colnames(pca_vals_mqc) <- paste0(colnames(pca_vals_mqc), ": ", percentVar[1:2], '% variance')
         pca_vals_mqc <- cbind(sample = rownames(pca_vals_mqc), pca_vals_mqc)
-        write.table(pca_vals_mqc, file = pca_data_file, row.names = FALSE, col.names = TRUE, sep = "\t", quote = TRUE)
+        write.table(pca_vals_mqc, file = pca_data_file, row.names = FALSE, col.names = TRUE, sep = "\t", quote = FALSE)
         cat("PCA data for interactive MultiQC plot saved:", pca_data_file, "\n")
         
         # PDF for organized storage (Quality_Control folder)
@@ -883,11 +883,11 @@ pca.vals           <- pca.data[,c("PC1","PC2")]
 colnames(pca.vals) <- paste0(colnames(pca.vals), ": ", percentVar[1:2], '% variance')
 pca.vals           <- cbind(sample = rownames(pca.vals), pca.vals)
 write.table(pca.vals, file = paste0(base_dir, opt$outprefix, ".pca.vals.txt"),
-            row.names = FALSE, col.names = TRUE, sep = "\t", quote = TRUE)
+            row.names = FALSE, col.names = TRUE, sep = "\t", quote = FALSE)
 
 # Also write to root level for Nextflow module output
 write.table(pca.vals, file = paste0(opt$outprefix, ".pca.vals.txt"),
-            row.names = FALSE, col.names = TRUE, sep = "\t", quote = TRUE)
+            row.names = FALSE, col.names = TRUE, sep = "\t", quote = FALSE)
 
 # PCA data available in PNG plot and .pca.vals.txt file - no TSV needed
 
