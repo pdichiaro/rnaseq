@@ -45,7 +45,9 @@ process NORMALIZE_DESEQ2_QC_INVARIANT_GENES {
         --cores $task.cpus \\
         $args
 
-    # Just let MultiQC find the files where they are
+    echo "=== FILES GENERATED FOR MULTIQC ==="
+    ls -la *.txt 2>/dev/null || echo "No .txt files found"
+    echo "===================================="
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
