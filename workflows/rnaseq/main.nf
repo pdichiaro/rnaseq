@@ -366,8 +366,6 @@ workflow RNASEQ {
                 // Initialize empty channels for conditional outputs
                 ch_normalization_versions = Channel.empty()
                 ch_normalization_scaling_factors = Channel.empty()
-                ch_normalization_multiqc_files = Channel.empty()
-                ch_deseq2_raw_files = Channel.empty()
                 
                 // Run invariant_genes normalization if requested
                 if (normalization_methods.contains('invariant_genes')) {
@@ -375,13 +373,12 @@ workflow RNASEQ {
                         QUANTIFY_RSEM.out.merged_counts_gene,
                         "STAR_RSEM"
                     )
-                    // Collect DESeq2 files for transformation
-                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.sample_distances_txt.flatten())
-                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_all_genes_txt.flatten())
-                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_top_genes_txt.flatten())
                     
-                    // Other normalization files (not DESeq2 plots)
-                    ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.read_dist_norm_txt.flatten())
+                    // Mix DESeq2 QC outputs directly into main MultiQC channel
+                    ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.sample_distances_txt.flatten())
+                    ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_all_genes_txt.flatten())
+                    ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_top_genes_txt.flatten())
+                    ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.read_dist_norm_txt.flatten())
                     ch_normalization_versions = ch_normalization_versions.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.versions)
                     ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors)
                 }
@@ -392,33 +389,17 @@ workflow RNASEQ {
                         QUANTIFY_RSEM.out.merged_counts_gene,
                         "STAR_RSEM"
                     )
-                    // Collect DESeq2 files for transformation
-                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.sample_distances_txt.flatten())
-                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_all_genes_txt.flatten())
-                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_top_genes_txt.flatten())
                     
-                    // Other normalization files (not DESeq2 plots)
-                    ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.read_dist_norm_txt.flatten())
+                    // Mix DESeq2 QC outputs directly into main MultiQC channel
+                    ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.sample_distances_txt.flatten())
+                    ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_all_genes_txt.flatten())
+                    ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_top_genes_txt.flatten())
+                    ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.read_dist_norm_txt.flatten())
                     ch_normalization_versions = ch_normalization_versions.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.versions)
                     ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors)
                 }
                 
-                // Transform DESeq2 files to MultiQC format
-                ch_deseq2_pca_header = Channel.fromPath("${projectDir}/assets/multiqc/deseq2_pca_header.txt", checkIfExists: true)
-                ch_deseq2_clustering_header = Channel.fromPath("${projectDir}/assets/multiqc/deseq2_clustering_header.txt", checkIfExists: true)
-                
-                DESEQ2_TRANSFORM(
-                    ch_deseq2_raw_files.collect(),
-                    ch_deseq2_pca_header,
-                    ch_deseq2_clustering_header
-                )
-                
-                // Add transformed files to MultiQC
-                ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(DESEQ2_TRANSFORM.out.multiqc_files.flatten())
-                ch_normalization_versions = ch_normalization_versions.mix(DESEQ2_TRANSFORM.out.versions)
-                
                 // Mix the normalization results into main channels
-                ch_multiqc_files = ch_multiqc_files.mix(ch_normalization_multiqc_files)
                 ch_versions = ch_versions.mix(ch_normalization_versions)
                 ch_scaling_factors = ch_scaling_factors.mix(ch_normalization_scaling_factors)
             }
