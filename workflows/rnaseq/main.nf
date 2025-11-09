@@ -373,10 +373,10 @@ workflow RNASEQ {
                         QUANTIFY_RSEM.out.merged_counts_gene,
                         "STAR_RSEM"
                     )
-                    ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.sample_distances_txt)
-                    ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_all_genes_txt)
-                    ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_top_genes_txt)
-                    ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.read_dist_norm_txt)
+                    ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.sample_distances_txt.flatten())
+                    ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_all_genes_txt.flatten())
+                    ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_top_genes_txt.flatten())
+                    ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.read_dist_norm_txt.flatten())
                     ch_normalization_versions = ch_normalization_versions.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.versions)
                     ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors)
                 }
@@ -387,10 +387,10 @@ workflow RNASEQ {
                         QUANTIFY_RSEM.out.merged_counts_gene,
                         "STAR_RSEM"
                     )
-                    ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.sample_distances_txt)
-                    ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_all_genes_txt)
-                    ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_top_genes_txt)
-                    ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.read_dist_norm_txt)
+                    ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.sample_distances_txt.flatten())
+                    ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_all_genes_txt.flatten())
+                    ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_top_genes_txt.flatten())
+                    ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.read_dist_norm_txt.flatten())
                     ch_normalization_versions = ch_normalization_versions.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.versions)
                     ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors)
                 }
@@ -441,10 +441,10 @@ workflow RNASEQ {
                         QUANTIFY_STAR_SALMON.out.counts_gene,
                         "STAR_Salmon"
                     )
-                    ch_normalization_multiqc_files_salmon = ch_normalization_multiqc_files_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.sample_distances_txt)
-                    ch_normalization_multiqc_files_salmon = ch_normalization_multiqc_files_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.pca_all_genes_txt)
-                    ch_normalization_multiqc_files_salmon = ch_normalization_multiqc_files_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.pca_top_genes_txt)
-                    ch_normalization_multiqc_files_salmon = ch_normalization_multiqc_files_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.read_dist_norm_txt)
+                    ch_normalization_multiqc_files_salmon = ch_normalization_multiqc_files_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.sample_distances_txt.flatten())
+                    ch_normalization_multiqc_files_salmon = ch_normalization_multiqc_files_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.pca_all_genes_txt.flatten())
+                    ch_normalization_multiqc_files_salmon = ch_normalization_multiqc_files_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.pca_top_genes_txt.flatten())
+                    ch_normalization_multiqc_files_salmon = ch_normalization_multiqc_files_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.read_dist_norm_txt.flatten())
                     ch_normalization_versions_salmon = ch_normalization_versions_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.versions)
                     ch_normalization_scaling_factors_salmon = ch_normalization_scaling_factors_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.scaling_factors)
                 }
@@ -455,10 +455,10 @@ workflow RNASEQ {
                         QUANTIFY_STAR_SALMON.out.counts_gene,
                         "STAR_Salmon"
                     )
-                    ch_normalization_multiqc_files_salmon = ch_normalization_multiqc_files_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.sample_distances_txt)
-                    ch_normalization_multiqc_files_salmon = ch_normalization_multiqc_files_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_all_genes_txt)
-                    ch_normalization_multiqc_files_salmon = ch_normalization_multiqc_files_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_top_genes_txt)
-                    ch_normalization_multiqc_files_salmon = ch_normalization_multiqc_files_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.read_dist_norm_txt)
+                    ch_normalization_multiqc_files_salmon = ch_normalization_multiqc_files_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.sample_distances_txt.flatten())
+                    ch_normalization_multiqc_files_salmon = ch_normalization_multiqc_files_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_all_genes_txt.flatten())
+                    ch_normalization_multiqc_files_salmon = ch_normalization_multiqc_files_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_top_genes_txt.flatten())
+                    ch_normalization_multiqc_files_salmon = ch_normalization_multiqc_files_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.read_dist_norm_txt.flatten())
                     ch_normalization_versions_salmon = ch_normalization_versions_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.versions)
                     ch_normalization_scaling_factors_salmon = ch_normalization_scaling_factors_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors)
                 }
@@ -505,10 +505,10 @@ workflow RNASEQ {
                         MERGE_GENOME_COUNTS.out.merged_counts.first(),
                         "STAR_Genome"
                     )
-                    ch_normalization_multiqc_files_genome = ch_normalization_multiqc_files_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.sample_distances_txt)
-                    ch_normalization_multiqc_files_genome = ch_normalization_multiqc_files_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_all_genes_txt)
-                    ch_normalization_multiqc_files_genome = ch_normalization_multiqc_files_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_top_genes_txt)
-                    ch_normalization_multiqc_files_genome = ch_normalization_multiqc_files_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.read_dist_norm_txt)
+                    ch_normalization_multiqc_files_genome = ch_normalization_multiqc_files_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.sample_distances_txt.flatten())
+                    ch_normalization_multiqc_files_genome = ch_normalization_multiqc_files_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_all_genes_txt.flatten())
+                    ch_normalization_multiqc_files_genome = ch_normalization_multiqc_files_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_top_genes_txt.flatten())
+                    ch_normalization_multiqc_files_genome = ch_normalization_multiqc_files_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.read_dist_norm_txt.flatten())
                     ch_normalization_versions_genome = ch_normalization_versions_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.versions)
                     ch_normalization_scaling_factors_genome = ch_normalization_scaling_factors_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors)
                 }
@@ -519,10 +519,10 @@ workflow RNASEQ {
                         MERGE_GENOME_COUNTS.out.merged_counts.first(),
                         "STAR_Genome"
                     )
-                    ch_normalization_multiqc_files_genome = ch_normalization_multiqc_files_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.sample_distances_txt)
-                    ch_normalization_multiqc_files_genome = ch_normalization_multiqc_files_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_all_genes_txt)
-                    ch_normalization_multiqc_files_genome = ch_normalization_multiqc_files_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_top_genes_txt)
-                    ch_normalization_multiqc_files_genome = ch_normalization_multiqc_files_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.read_dist_norm_txt)
+                    ch_normalization_multiqc_files_genome = ch_normalization_multiqc_files_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.sample_distances_txt.flatten())
+                    ch_normalization_multiqc_files_genome = ch_normalization_multiqc_files_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_all_genes_txt.flatten())
+                    ch_normalization_multiqc_files_genome = ch_normalization_multiqc_files_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_top_genes_txt.flatten())
+                    ch_normalization_multiqc_files_genome = ch_normalization_multiqc_files_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.read_dist_norm_txt.flatten())
                     ch_normalization_versions_genome = ch_normalization_versions_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.versions)
                     ch_normalization_scaling_factors_genome = ch_normalization_scaling_factors_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors)
                 }
@@ -620,10 +620,10 @@ workflow RNASEQ {
                         MERGE_GENOME_COUNTS_HISAT2.out.merged_counts.first(),
                         "HISAT2_Genome"
                     )
-                    ch_normalization_multiqc_files_hisat2 = ch_normalization_multiqc_files_hisat2.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.sample_distances_txt)
-                    ch_normalization_multiqc_files_hisat2 = ch_normalization_multiqc_files_hisat2.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_all_genes_txt)
-                    ch_normalization_multiqc_files_hisat2 = ch_normalization_multiqc_files_hisat2.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_top_genes_txt)
-                    ch_normalization_multiqc_files_hisat2 = ch_normalization_multiqc_files_hisat2.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.read_dist_norm_txt)
+                    ch_normalization_multiqc_files_hisat2 = ch_normalization_multiqc_files_hisat2.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.sample_distances_txt.flatten())
+                    ch_normalization_multiqc_files_hisat2 = ch_normalization_multiqc_files_hisat2.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_all_genes_txt.flatten())
+                    ch_normalization_multiqc_files_hisat2 = ch_normalization_multiqc_files_hisat2.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_top_genes_txt.flatten())
+                    ch_normalization_multiqc_files_hisat2 = ch_normalization_multiqc_files_hisat2.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.read_dist_norm_txt.flatten())
                     ch_normalization_versions_hisat2 = ch_normalization_versions_hisat2.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.versions)
                     ch_normalization_scaling_factors_hisat2 = ch_normalization_scaling_factors_hisat2.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors)
                 }
@@ -634,10 +634,10 @@ workflow RNASEQ {
                         MERGE_GENOME_COUNTS_HISAT2.out.merged_counts.first(),
                         "HISAT2_Genome"
                     )
-                    ch_normalization_multiqc_files_hisat2 = ch_normalization_multiqc_files_hisat2.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.sample_distances_txt)
-                    ch_normalization_multiqc_files_hisat2 = ch_normalization_multiqc_files_hisat2.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_all_genes_txt)
-                    ch_normalization_multiqc_files_hisat2 = ch_normalization_multiqc_files_hisat2.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_top_genes_txt)
-                    ch_normalization_multiqc_files_hisat2 = ch_normalization_multiqc_files_hisat2.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.read_dist_norm_txt)
+                    ch_normalization_multiqc_files_hisat2 = ch_normalization_multiqc_files_hisat2.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.sample_distances_txt.flatten())
+                    ch_normalization_multiqc_files_hisat2 = ch_normalization_multiqc_files_hisat2.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_all_genes_txt.flatten())
+                    ch_normalization_multiqc_files_hisat2 = ch_normalization_multiqc_files_hisat2.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_top_genes_txt.flatten())
+                    ch_normalization_multiqc_files_hisat2 = ch_normalization_multiqc_files_hisat2.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.read_dist_norm_txt.flatten())
                     ch_normalization_versions_hisat2 = ch_normalization_versions_hisat2.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.versions)
                     ch_normalization_scaling_factors_hisat2 = ch_normalization_scaling_factors_hisat2.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors)
                 }
@@ -1010,10 +1010,10 @@ workflow RNASEQ {
                 )
 
                 // Mix DESeq2 QC outputs directly into main MultiQC channel
-                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.sample_distances_txt)
-                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.pca_all_genes_txt)
-                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.pca_top_genes_txt)
-                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.read_dist_norm_txt)
+                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.sample_distances_txt.flatten())
+                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.pca_all_genes_txt.flatten())
+                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.pca_top_genes_txt.flatten())
+                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.read_dist_norm_txt.flatten())
                 ch_normalization_versions_pseudo = ch_normalization_versions_pseudo.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.versions)
                 ch_normalization_scaling_factors_pseudo = ch_normalization_scaling_factors_pseudo.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.scaling_factors)
             }
@@ -1026,10 +1026,10 @@ workflow RNASEQ {
                 )
 
                 // Mix DESeq2 QC outputs directly into main MultiQC channel
-                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.sample_distances_txt)
-                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.pca_all_genes_txt)
-                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.pca_top_genes_txt)
-                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.read_dist_norm_txt)
+                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.sample_distances_txt.flatten())
+                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.pca_all_genes_txt.flatten())
+                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.pca_top_genes_txt.flatten())
+                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.read_dist_norm_txt.flatten())
                 ch_normalization_versions_pseudo = ch_normalization_versions_pseudo.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.versions)
                 ch_normalization_scaling_factors_pseudo = ch_normalization_scaling_factors_pseudo.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.scaling_factors)
             }
