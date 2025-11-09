@@ -997,7 +997,6 @@ workflow RNASEQ {
             // Initialize empty channels for conditional outputs
             ch_normalization_versions_pseudo = Channel.empty()
             ch_normalization_scaling_factors_pseudo = Channel.empty()
-            ch_normalization_multiqc_files = Channel.empty()
             
             // Determine the quantifier for file naming (must match what was actually used for quantification)
             // This is critical for MultiQC to find the correct files
@@ -1010,10 +1009,11 @@ workflow RNASEQ {
                     pseudo_quantifier
                 )
 
-                ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.sample_distances_txt.collect())
-                ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.pca_all_genes_txt.collect())
-                ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.pca_top_genes_txt.collect())
-                ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.read_dist_norm_txt.collect())
+                // Mix DESeq2 QC outputs directly into main MultiQC channel
+                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.sample_distances_txt.collect().ifEmpty([]))
+                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.pca_all_genes_txt.collect().ifEmpty([]))
+                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.pca_top_genes_txt.collect().ifEmpty([]))
+                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.read_dist_norm_txt.collect().ifEmpty([]))
                 ch_normalization_versions_pseudo = ch_normalization_versions_pseudo.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.versions)
                 ch_normalization_scaling_factors_pseudo = ch_normalization_scaling_factors_pseudo.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.scaling_factors)
             }
@@ -1025,16 +1025,16 @@ workflow RNASEQ {
                     pseudo_quantifier
                 )
 
-                ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.sample_distances_txt.collect())
-                ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.pca_all_genes_txt.collect())
-                ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.pca_top_genes_txt.collect())
-                ch_normalization_multiqc_files = ch_normalization_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.read_dist_norm_txt.collect())
+                // Mix DESeq2 QC outputs directly into main MultiQC channel
+                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.sample_distances_txt.collect().ifEmpty([]))
+                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.pca_all_genes_txt.collect().ifEmpty([]))
+                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.pca_top_genes_txt.collect().ifEmpty([]))
+                ch_multiqc_files = ch_multiqc_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.read_dist_norm_txt.collect().ifEmpty([]))
                 ch_normalization_versions_pseudo = ch_normalization_versions_pseudo.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.versions)
                 ch_normalization_scaling_factors_pseudo = ch_normalization_scaling_factors_pseudo.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.scaling_factors)
             }
             
-            // Mix the normalization results into main channels
-            ch_multiqc_files = ch_multiqc_files.mix(ch_normalization_multiqc_files)
+            // Mix the normalization scaling factors and versions into main channels
             ch_versions = ch_versions.mix(ch_normalization_versions_pseudo)
             ch_scaling_factors = ch_scaling_factors.mix(ch_normalization_scaling_factors_pseudo)
         }
