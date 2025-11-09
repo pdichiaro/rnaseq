@@ -1,0 +1,147 @@
+Nov-09 17:57:29.292 [main] DEBUG nextflow.cli.Launcher - $> nextflow run test_channel_behavior.nf
+Nov-09 17:57:29.384 [main] DEBUG nextflow.cli.CmdRun - N E X T F L O W  ~  version 25.04.7
+Nov-09 17:57:29.419 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; embedded=false; plugins-dir=/home/user/.nextflow/plugins; core-plugins: nf-amazon@2.15.0-patch1,nf-azure@1.16.0-patch1,nf-cloudcache@0.4.3,nf-codecommit@0.2.3,nf-console@1.2.1,nf-google@1.21.1,nf-k8s@1.0.0,nf-tower@1.11.4-patch1,nf-wave@1.12.1
+Nov-09 17:57:29.459 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Nov-09 17:57:29.460 [main] INFO  o.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Nov-09 17:57:29.465 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.12.0 in 'deployment' mode
+Nov-09 17:57:29.481 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Nov-09 17:57:29.515 [main] DEBUG nextflow.config.ConfigBuilder - Found config local: /home/user/rnaseq_fix/nextflow.config
+Nov-09 17:57:29.520 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /home/user/rnaseq_fix/nextflow.config
+Nov-09 17:57:29.572 [main] DEBUG n.secret.LocalSecretsProvider - Secrets store: /home/user/.nextflow/secrets/store.json
+Nov-09 17:57:29.578 [main] DEBUG nextflow.secret.SecretsLoader - Discovered secrets providers: [nextflow.secret.LocalSecretsProvider@1ded7b14] - activable => nextflow.secret.LocalSecretsProvider@1ded7b14
+Nov-09 17:57:29.587 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `standard`
+Nov-09 17:57:34.325 [main] DEBUG nextflow.cli.CmdRun - Applied DSL=2 by global default
+Nov-09 17:57:34.346 [main] DEBUG nextflow.cli.CmdRun - Launching `test_channel_behavior.nf` [kickass_planck] DSL2 - revision: dbc33d191e
+Nov-09 17:57:34.348 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins declared=[nf-schema@2.4.2]
+Nov-09 17:57:34.349 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Nov-09 17:57:34.349 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins resolved requirement=[nf-schema@2.4.2]
+Nov-09 17:57:34.351 [main] DEBUG nextflow.plugin.PluginUpdater - Installing plugin nf-schema version: 2.4.2
+Nov-09 17:57:34.363 [main] INFO  org.pf4j.AbstractPluginManager - Plugin 'nf-schema@2.4.2' resolved
+Nov-09 17:57:34.364 [main] INFO  org.pf4j.AbstractPluginManager - Start plugin 'nf-schema@2.4.2'
+Nov-09 17:57:34.372 [main] DEBUG nextflow.plugin.BasePlugin - Plugin started nf-schema@2.4.2
+Nov-09 17:57:34.445 [main] DEBUG nextflow.Session - Session UUID: a63a7089-da8e-4f6d-9379-a4dbbca4f236
+Nov-09 17:57:34.446 [main] DEBUG nextflow.Session - Run name: kickass_planck
+Nov-09 17:57:34.447 [main] DEBUG nextflow.Session - Executor pool size: 8
+Nov-09 17:57:34.458 [main] DEBUG nextflow.file.FilePorter - File porter settings maxRetries=3; maxTransfers=50; pollTimeout=null
+Nov-09 17:57:34.465 [main] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'FileTransfer' minSize=10; maxSize=24; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+Nov-09 17:57:34.491 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 25.04.7 build 5955
+  Created: 08-09-2025 13:29 UTC 
+  System: Linux 6.1.102
+  Runtime: Groovy 4.0.26 on OpenJDK 64-Bit Server VM 21.0.8+9-Ubuntu-0ubuntu124.04.1
+  Encoding: UTF-8 (ANSI_X3.4-1968)
+  Process: 2330@e2b.local [127.0.1.1]
+  CPUs: 8 - Mem: 7.7 GB (6.6 GB) - Swap: 128 MB (128 MB)
+Nov-09 17:57:34.526 [main] DEBUG nextflow.Session - Work-dir: /home/user/rnaseq_fix/work [ext2/ext3]
+Nov-09 17:57:34.574 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+Nov-09 17:57:34.588 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
+Nov-09 17:57:34.620 [main] DEBUG nextflow.Session - Observer factory: ValidationObserverFactory
+Nov-09 17:57:34.627 [main] DEBUG nextflow.Session - Observer factory (v2): LinObserverFactory
+Nov-09 17:57:34.662 [main] DEBUG nextflow.cache.CacheFactory - Using Nextflow cache factory: nextflow.cache.DefaultCacheFactory
+Nov-09 17:57:34.676 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 9; maxThreads: 1000
+Nov-09 17:57:34.755 [main] DEBUG nextflow.Session - Session start
+Nov-09 17:57:34.760 [main] DEBUG nextflow.trace.TraceFileObserver - Workflow started -- trace file: /home/user/rnaseq_fix/null/pipeline_info/execution_trace_2025-11-09_17-57-31.txt
+Nov-09 17:57:34.769 [main] DEBUG n.validation.config.ValidationConfig - Set `validation.monochromeLogs` to false
+Nov-09 17:57:34.772 [main] DEBUG n.validation.config.ValidationConfig - Added the following parameters to the ignored parameters: [genomes]
+Nov-09 17:57:34.775 [main] DEBUG n.validation.config.HelpConfig - Set `validation.help.enabled` to true
+Nov-09 17:57:34.776 [main] DEBUG n.validation.config.HelpConfig - Set `validation.help.showHiddenParameter` to show_hidden
+Nov-09 17:57:34.777 [main] DEBUG n.validation.config.HelpConfig - Set `validation.help.showHidden` to false (Due to --show_hidden)
+Nov-09 17:57:34.778 [main] DEBUG n.validation.config.HelpConfig - Set `validation.help.fullParameter` to help_full
+Nov-09 17:57:34.791 [main] DEBUG n.validation.config.HelpConfig - Set `validation.help.beforeText` to 
+------------------------------------------------------
+                                        ,--./,-.
+        ___     __   __   __   ___     /,-._.--~'
+  |\ | |__  __ /  ` /  \ |__) |__         }  {
+  | \| |       \__, \__/ |  \ |___     \`-._,-`-,
+                                        `._,._,'
+  nf-core/rnaseq 3.21.0
+------------------------------------------------------
+
+Nov-09 17:57:34.793 [main] DEBUG n.validation.config.HelpConfig - Set `validation.help.afterText` to 
+* The pipeline
+    https://doi.org/10.5281/zenodo.1400710
+
+* The nf-core framework
+    https://doi.org/10.1038/s41587-020-0439-x
+
+* Software dependencies
+    https://github.com/nf-core/rnaseq/blob/master/CITATIONS.md
+
+Nov-09 17:57:34.796 [main] DEBUG n.validation.config.HelpConfig - Set `validation.help.command` to nextflow run nf-core/rnaseq -profile <docker/singularity/.../institute> --input samplesheet.csv --outdir <OUTDIR>
+Nov-09 17:57:34.800 [main] DEBUG n.validation.config.SummaryConfig - Set `validation.summary.beforeText` to 
+------------------------------------------------------
+                                        ,--./,-.
+        ___     __   __   __   ___     /,-._.--~'
+  |\ | |__  __ /  ` /  \ |__) |__         }  {
+  | \| |       \__, \__/ |  \ |___     \`-._,-`-,
+                                        `._,._,'
+  nf-core/rnaseq 3.21.0
+------------------------------------------------------
+
+Nov-09 17:57:34.802 [main] DEBUG n.validation.config.SummaryConfig - Set `validation.summary.afterText` to 
+* The pipeline
+    https://doi.org/10.5281/zenodo.1400710
+
+* The nf-core framework
+    https://doi.org/10.1038/s41587-020-0439-x
+
+* Software dependencies
+    https://github.com/nf-core/rnaseq/blob/master/CITATIONS.md
+
+Nov-09 17:57:35.162 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Nov-09 17:57:35.363 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Nov-09 17:57:35.364 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Nov-09 17:57:35.373 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
+Nov-09 17:57:35.383 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=8; memory=7.7 GB; capacity=8; pollInterval=100ms; dumpInterval=5m
+Nov-09 17:57:35.387 [main] DEBUG n.processor.TaskPollingMonitor - >>> barrier register (monitor: local)
+Nov-09 17:57:35.421 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'MAKE_FILES_1': maxForks=0; fair=false; array=0
+Nov-09 17:57:35.487 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Nov-09 17:57:35.488 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Nov-09 17:57:35.489 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'MAKE_FILES_2': maxForks=0; fair=false; array=0
+Nov-09 17:57:35.498 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Nov-09 17:57:35.499 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Nov-09 17:57:35.500 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'MAKE_FILES_3': maxForks=0; fair=false; array=0
+Nov-09 17:57:35.573 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Nov-09 17:57:35.574 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Nov-09 17:57:35.575 [main] DEBUG nextflow.processor.TaskProcessor - Creating process 'COLLECT_ALL': maxForks=0; fair=false; array=0
+Nov-09 17:57:35.586 [main] DEBUG nextflow.Session - Config process names validation disabled as requested
+Nov-09 17:57:35.593 [main] DEBUG nextflow.Session - Igniting dataflow network (5)
+Nov-09 17:57:35.594 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > MAKE_FILES_1
+Nov-09 17:57:35.595 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > MAKE_FILES_2
+Nov-09 17:57:35.595 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > MAKE_FILES_3
+Nov-09 17:57:35.595 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > COLLECT_ALL
+Nov-09 17:57:35.596 [main] DEBUG nextflow.script.ScriptRunner - Parsed script files:
+  Script_a191721923472cde: /home/user/rnaseq_fix/test_channel_behavior.nf
+Nov-09 17:57:35.596 [main] DEBUG nextflow.script.ScriptRunner - > Awaiting termination 
+Nov-09 17:57:35.596 [main] DEBUG nextflow.Session - Session await
+Nov-09 17:57:35.777 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Nov-09 17:57:35.780 [Task submitter] INFO  nextflow.Session - [30/ebcc98] Submitted process > MAKE_FILES_2
+Nov-09 17:57:35.867 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 3; name: MAKE_FILES_2; status: COMPLETED; exit: 0; error: -; workDir: /home/user/rnaseq_fix/work/30/ebcc9853e8da96872dac7878839397]
+Nov-09 17:57:35.868 [Task monitor] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'TaskFinalizer' minSize=10; maxSize=24; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+Nov-09 17:57:35.877 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Nov-09 17:57:35.878 [Task submitter] INFO  nextflow.Session - [48/0a116f] Submitted process > MAKE_FILES_3
+Nov-09 17:57:35.914 [TaskFinalizer-1] WARN  nextflow.processor.PublishDir - Process `MAKE_FILES_2` publishDir path contains a variable with a null value
+Nov-09 17:57:35.925 [TaskFinalizer-1] DEBUG nextflow.util.ThreadPoolBuilder - Creating thread pool 'PublishDir' minSize=10; maxSize=24; workQueue=LinkedBlockingQueue[-1]; allowCoreThreadTimeout=false
+Nov-09 17:57:35.991 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 2; name: MAKE_FILES_3; status: COMPLETED; exit: 0; error: -; workDir: /home/user/rnaseq_fix/work/48/0a116fa01a0ac430bfcbde7ff516fd]
+Nov-09 17:57:35.997 [TaskFinalizer-2] WARN  nextflow.processor.PublishDir - Process `MAKE_FILES_3` publishDir path contains a variable with a null value
+Nov-09 17:57:35.999 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Nov-09 17:57:36.000 [Task submitter] INFO  nextflow.Session - [84/0e8beb] Submitted process > MAKE_FILES_1
+Nov-09 17:57:36.087 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 1; name: MAKE_FILES_1; status: COMPLETED; exit: 0; error: -; workDir: /home/user/rnaseq_fix/work/84/0e8beb5eaa87cbba53d92306659a23]
+Nov-09 17:57:36.092 [TaskFinalizer-3] WARN  nextflow.processor.PublishDir - Process `MAKE_FILES_1` publishDir path contains a variable with a null value
+Nov-09 17:57:36.135 [Task submitter] DEBUG n.executor.local.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Nov-09 17:57:36.136 [Task submitter] INFO  nextflow.Session - [64/6b4c2b] Submitted process > COLLECT_ALL
+Nov-09 17:57:36.239 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 4; name: COLLECT_ALL; status: COMPLETED; exit: 0; error: -; workDir: /home/user/rnaseq_fix/work/64/6b4c2bfd68715b3a99ff8431a3d126]
+Nov-09 17:57:36.247 [main] DEBUG nextflow.Session - Session await > all processes finished
+Nov-09 17:57:36.340 [Task monitor] DEBUG n.processor.TaskPollingMonitor - <<< barrier arrives (monitor: local) - terminating tasks monitor poll loop
+Nov-09 17:57:36.341 [main] DEBUG nextflow.Session - Session await > all barriers passed
+Nov-09 17:57:36.344 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'TaskFinalizer' shutdown completed (hard=false)
+Nov-09 17:57:36.345 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'PublishDir' shutdown completed (hard=false)
+Nov-09 17:57:36.352 [main] DEBUG n.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=4; failedCount=0; ignoredCount=0; cachedCount=0; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=0; succeedDuration=40ms; failedDuration=0ms; cachedDuration=0ms;loadCpus=0; loadMemory=0; peakRunning=1; peakCpus=1; peakMemory=6 GB; ]
+Nov-09 17:57:36.352 [main] DEBUG nextflow.trace.TraceFileObserver - Workflow completed -- saving trace file
+Nov-09 17:57:36.354 [main] DEBUG nextflow.trace.ReportObserver - Workflow completed -- rendering execution report
+Nov-09 17:57:37.251 [main] DEBUG nextflow.trace.TimelineObserver - Workflow completed -- rendering execution timeline
+Nov-09 17:57:37.414 [main] DEBUG nextflow.cache.CacheDB - Closing CacheDB done
+Nov-09 17:57:37.425 [main] INFO  org.pf4j.AbstractPluginManager - Stop plugin 'nf-schema@2.4.2'
+Nov-09 17:57:37.425 [main] DEBUG nextflow.plugin.BasePlugin - Plugin stopped nf-schema
+Nov-09 17:57:37.426 [main] DEBUG nextflow.util.ThreadPoolManager - Thread pool 'FileTransfer' shutdown completed (hard=false)
+Nov-09 17:57:37.426 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye

@@ -1,0 +1,6 @@
+Files received:
+  - file1_process2.txt
+  - file2_process2.txt
+  - file1_process3.txt
+  - file1_process1.txt
+  - file2_process1.txt
