@@ -1,0 +1,5 @@
+	sample1	sample2	sample3	sample4
+sample1	0.00	45.23	32.11	28.45
+sample2	45.23	0.00	38.92	41.23
+sample3	32.11	38.92	0.00	29.87
+sample4	28.45	41.23	29.87	0.00
