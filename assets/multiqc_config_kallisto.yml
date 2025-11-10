@@ -1,0 +1,30 @@
+custom_data:
+  kallisto_alignment_cnt:
+    id: 'kallisto_alignment_cnt'
+    section_name: 'Kallisto Alignment Statistics (Counts)'
+    description: 'Number of reads processed, pseudoaligned, and uniquely mapped by Kallisto'
+    file_format: 'tsv'
+    plot_type: 'bargraph'
+    pconfig:
+      id: 'kallisto_alignment_bargraph_cnt'
+      title: 'Kallisto: Alignment Statistics (Counts)'
+      ylab: 'Number of Reads'
+      cpswitch_counts_label: 'Number of Reads'
+    
+  kallisto_alignment_pct:
+    id: 'kallisto_alignment_pct'
+    section_name: 'Kallisto Alignment Statistics (Percentages)'
+    description: 'Percentage of reads processed, pseudoaligned, and uniquely mapped by Kallisto'
+    file_format: 'tsv'
+    plot_type: 'bargraph'
+    pconfig:
+      id: 'kallisto_alignment_bargraph_pct'
+      title: 'Kallisto: Alignment Statistics (Percentages)'
+      ylab: 'Percentage'
+      cpswitch_counts_label: 'Percentage'
+
+sp:
+  kallisto_alignment_cnt:
+    fn: '*kallisto_alignment_stats_cnt_mqc.tsv'
+  kallisto_alignment_pct:
+    fn: '*kallisto_alignment_stats_pct_mqc.txt'
