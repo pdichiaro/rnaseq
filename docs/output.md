@@ -67,10 +67,10 @@ star/                          # Aligner directory
 **Note**: HISAT2 only supports `--quantification genome` using GENOME_COUNT module.
 
 
-## Pseudoalignment (--pseudo_aligner kallisto,salmon)
+## Pseudoalignment (--pseudo_aligner kallisto)
 
 ```
-kallisto (or salmon)/
+kallisto /
 ├── [common BAM files, logs, general QC] # Shared across all quantification methods
 ├── tximport/                    # tximport processing outputs
     ├── [quantification files] 
@@ -81,6 +81,10 @@ kallisto (or salmon)/
         ├── all_genes/         # Normalization method subdirectory  
         └── invariant_genes/   # Normalization method subdirectory
 ```
+
+## Pseudoalignment (--pseudo_aligner salmon)
+
+**Note**: SALMON does not generate BAM files.
 
 
 ## Reference Genome Files (if --save_reference)
