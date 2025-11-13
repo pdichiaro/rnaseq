@@ -270,6 +270,23 @@ write.table(scaling_dat_early, file = paste0(early_save_folder, "scaling_dat.txt
 write.table(scaling_dat_early, file = "scaling_dat.txt", sep = "\t", 
            row.names = FALSE, col.names = TRUE, quote = FALSE)
 
+# Create per-sample scaling factor files for safe DeepTools normalization
+# This avoids grep parsing issues and is more robust
+cat("Creating per-sample scaling factor files...\n")
+scaling_factors_dir <- "scaling_factors"
+dir.create(scaling_factors_dir, showWarnings = FALSE, recursive = TRUE)
+
+for (i in 1:nrow(scaling_dat_early)) {
+    sample_name <- scaling_dat_early$sample[i]
+    scaling_factor <- scaling_dat_early$scaling_factor[i]
+    
+    # Write individual scaling factor file (just the numeric value)
+    sample_file <- file.path(scaling_factors_dir, paste0(sample_name, "_scaling_factor.txt"))
+    writeLines(as.character(scaling_factor), sample_file)
+    
+    cat("  - Created:", sample_file, "with scaling factor:", scaling_factor, "\n")
+}
+
 
 
 cat("Scaling factors saved to:", early_save_folder, "\n")

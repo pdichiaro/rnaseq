@@ -188,6 +188,7 @@ workflow RNASEQ {
     ch_strand_status = Channel.empty()
     ch_percent_mapped = Channel.empty()
     ch_scaling_factors = Channel.empty()
+    ch_scaling_factors_individual = Channel.empty()
 
     //
     // Create channel from input file provided through params.input
@@ -378,6 +379,7 @@ workflow RNASEQ {
                 // Initialize empty channels for conditional outputs
                 ch_normalization_versions = Channel.empty()
                 ch_normalization_scaling_factors = Channel.empty()
+                ch_normalization_scaling_factors_individual = Channel.empty()
                 ch_deseq2_raw_files = Channel.empty()
                 
                 // Run invariant_genes normalization if requested
@@ -396,6 +398,7 @@ workflow RNASEQ {
                     // Mix other normalization files directly (not plots)
                     ch_normalization_versions = ch_normalization_versions.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.versions)
                     ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors)
+                    ch_normalization_scaling_factors_individual = ch_normalization_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors_individual)
                 }
                 
                 // Run all_genes normalization if requested or as default
@@ -414,6 +417,7 @@ workflow RNASEQ {
                     // Mix other normalization files directly (not plots)
                     ch_normalization_versions = ch_normalization_versions.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.versions)
                     ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors)
+                    ch_normalization_scaling_factors_individual = ch_normalization_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors_individual)
                 }
                 
                 // Create section header for DESeq2 QC in MultiQC report
@@ -436,6 +440,7 @@ workflow RNASEQ {
                 // Mix the normalization results into main channels
                 ch_versions = ch_versions.mix(ch_normalization_versions)
                 ch_scaling_factors = ch_scaling_factors.mix(ch_normalization_scaling_factors)
+                ch_scaling_factors_individual = ch_scaling_factors_individual.mix(ch_normalization_scaling_factors_individual)
             }
 
         }
@@ -470,6 +475,7 @@ workflow RNASEQ {
                 // Initialize empty channels for conditional outputs
                 ch_normalization_versions_salmon = Channel.empty()
                 ch_normalization_scaling_factors_salmon = Channel.empty()
+                ch_normalization_scaling_factors_individual_salmon = Channel.empty()
                 ch_deseq2_raw_files_salmon = Channel.empty()
                 
                 // Run invariant_genes normalization if requested
@@ -487,6 +493,7 @@ workflow RNASEQ {
                     
                     ch_normalization_versions_salmon = ch_normalization_versions_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.versions)
                     ch_normalization_scaling_factors_salmon = ch_normalization_scaling_factors_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.scaling_factors)
+                    ch_normalization_scaling_factors_individual_salmon = ch_normalization_scaling_factors_individual_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.scaling_factors_individual)
                 }
                 
                 // Run all_genes normalization if requested or as default
@@ -504,6 +511,7 @@ workflow RNASEQ {
                     
                     ch_normalization_versions_salmon = ch_normalization_versions_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.versions)
                     ch_normalization_scaling_factors_salmon = ch_normalization_scaling_factors_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors)
+                    ch_normalization_scaling_factors_individual_salmon = ch_normalization_scaling_factors_individual_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors_individual)
                 }
                 
                 // Create section header for DESeq2 QC in MultiQC report
@@ -526,6 +534,7 @@ workflow RNASEQ {
                 // Mix the normalization results into main channels
                 ch_versions = ch_versions.mix(ch_normalization_versions_salmon)
                 ch_scaling_factors = ch_scaling_factors.mix(ch_normalization_scaling_factors_salmon)
+                ch_scaling_factors_individual = ch_scaling_factors_individual.mix(ch_normalization_scaling_factors_individual_salmon)
             }
 
         }
@@ -556,6 +565,7 @@ workflow RNASEQ {
                 // Initialize empty channels for conditional outputs
                 ch_normalization_versions_genome = Channel.empty()
                 ch_normalization_scaling_factors_genome = Channel.empty()
+                ch_normalization_scaling_factors_individual_genome = Channel.empty()
                 ch_deseq2_raw_files_genome = Channel.empty()
                 
                 // Run invariant_genes normalization if requested
@@ -573,6 +583,7 @@ workflow RNASEQ {
                     
                     ch_normalization_versions_genome = ch_normalization_versions_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.versions)
                     ch_normalization_scaling_factors_genome = ch_normalization_scaling_factors_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors)
+                    ch_normalization_scaling_factors_individual_genome = ch_normalization_scaling_factors_individual_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors_individual)
                 }
                 
                 // Run all_genes normalization if requested or as default
@@ -590,6 +601,7 @@ workflow RNASEQ {
                     
                     ch_normalization_versions_genome = ch_normalization_versions_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.versions)
                     ch_normalization_scaling_factors_genome = ch_normalization_scaling_factors_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors)
+                    ch_normalization_scaling_factors_individual_genome = ch_normalization_scaling_factors_individual_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors_individual)
                 }
                 
                 // Create section header for DESeq2 QC in MultiQC report
@@ -612,6 +624,7 @@ workflow RNASEQ {
                 ch_versions = ch_versions.mix(ch_normalization_versions_genome)
                 ch_versions = ch_versions.mix(DESEQ2_TRANSFORM_STAR_GENOME.out.versions.first())
                 ch_scaling_factors = ch_scaling_factors.mix(ch_normalization_scaling_factors_genome)
+                ch_scaling_factors_individual = ch_scaling_factors_individual.mix(ch_normalization_scaling_factors_individual_genome)
             }
         }
     }
@@ -693,6 +706,7 @@ workflow RNASEQ {
                 // Initialize empty channels for conditional outputs
                 ch_normalization_versions_hisat2 = Channel.empty()
                 ch_normalization_scaling_factors_hisat2 = Channel.empty()
+                ch_normalization_scaling_factors_individual_hisat2 = Channel.empty()
                 ch_deseq2_raw_files_hisat2 = Channel.empty()
                 
                 // Run invariant_genes normalization if requested
@@ -710,6 +724,7 @@ workflow RNASEQ {
                     
                     ch_normalization_versions_hisat2 = ch_normalization_versions_hisat2.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.versions)
                     ch_normalization_scaling_factors_hisat2 = ch_normalization_scaling_factors_hisat2.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors)
+                    ch_normalization_scaling_factors_individual_hisat2 = ch_normalization_scaling_factors_individual_hisat2.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors_individual)
                 }
                 
                 // Run all_genes normalization if requested or as default
@@ -727,6 +742,7 @@ workflow RNASEQ {
                     
                     ch_normalization_versions_hisat2 = ch_normalization_versions_hisat2.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.versions)
                     ch_normalization_scaling_factors_hisat2 = ch_normalization_scaling_factors_hisat2.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors)
+                    ch_normalization_scaling_factors_individual_hisat2 = ch_normalization_scaling_factors_individual_hisat2.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors_individual)
                 }
                 
                 // Create section header for DESeq2 QC in MultiQC report
@@ -749,6 +765,7 @@ workflow RNASEQ {
                 // Mix the normalization results into main channels
                 ch_versions = ch_versions.mix(ch_normalization_versions_hisat2)
                 ch_scaling_factors = ch_scaling_factors.mix(ch_normalization_scaling_factors_hisat2)
+                ch_scaling_factors_individual = ch_scaling_factors_individual.mix(ch_normalization_scaling_factors_individual_hisat2)
             }
         }
     }
@@ -1100,6 +1117,7 @@ workflow RNASEQ {
             // Initialize empty channels for conditional outputs
             ch_normalization_versions_pseudo = Channel.empty()
             ch_normalization_scaling_factors_pseudo = Channel.empty()
+            ch_normalization_scaling_factors_individual_pseudo = Channel.empty()
             ch_deseq2_raw_files_pseudo = Channel.empty()
             
             // Determine the quantifier for file naming (must match what was actually used for quantification)
@@ -1121,6 +1139,7 @@ workflow RNASEQ {
                 
                 ch_normalization_versions_pseudo = ch_normalization_versions_pseudo.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.versions)
                 ch_normalization_scaling_factors_pseudo = ch_normalization_scaling_factors_pseudo.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.scaling_factors)
+                ch_normalization_scaling_factors_individual_pseudo = ch_normalization_scaling_factors_individual_pseudo.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.scaling_factors_individual)
             }
             
             // Run all_genes normalization if requested or as default
@@ -1138,6 +1157,7 @@ workflow RNASEQ {
                 
                 ch_normalization_versions_pseudo = ch_normalization_versions_pseudo.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.versions)
                 ch_normalization_scaling_factors_pseudo = ch_normalization_scaling_factors_pseudo.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.scaling_factors)
+                ch_normalization_scaling_factors_individual_pseudo = ch_normalization_scaling_factors_individual_pseudo.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.scaling_factors_individual)
             }
             
             // Create section header for DESeq2 QC in MultiQC report
@@ -1160,6 +1180,7 @@ workflow RNASEQ {
             ch_versions = ch_versions.mix(DESEQ2_TRANSFORM_PSEUDO.out.versions.first())
             ch_versions = ch_versions.mix(ch_normalization_versions_pseudo)
             ch_scaling_factors = ch_scaling_factors.mix(ch_normalization_scaling_factors_pseudo)
+            ch_scaling_factors_individual = ch_scaling_factors_individual.mix(ch_normalization_scaling_factors_individual_pseudo)
         }
     }
 
@@ -1177,26 +1198,32 @@ workflow RNASEQ {
             ch_bam_for_deeptools_invariant = ch_genome_bam
                 .join(ch_genome_bam_index, by: [0])
             
-            // Get scaling factors from the invariant genes normalization
-            ch_scaling_factors_invariant = ch_scaling_factors
-                .collect()
-                .map { files ->
-                    // Find invariant-specific scaling factors first
-                    def invariant_file = files.find { file ->
-                        def filename = file.name
-                        filename.contains('invariant') || filename.contains('Invariant')
-                    }
-                    // If no invariant-specific file, use the first available file
-                    return invariant_file ?: files[0]
+            // Get individual scaling factor files from the invariant genes normalization
+            // Each file is named: {sample_name}_scaling_factor.txt and contains just the numeric value
+            ch_scaling_per_sample_invariant = ch_scaling_factors_individual
+                .flatten()
+                .filter { file ->
+                    // Filter for invariant-specific files if method contains "invariant"
+                    def parent_dir = file.getParent()?.getName() ?: ""
+                    def grandparent_dir = file.getParent()?.getParent()?.getName() ?: ""
+                    parent_dir.contains('invariant') || grandparent_dir.contains('invariant')
+                }
+                .map { file ->
+                    // Extract sample name from filename: {sample_name}_scaling_factor.txt
+                    def sample_name = file.name.replaceAll('_scaling_factor\\.txt$', '')
+                    [sample_name, file]
                 }
             
-            // Combine BAM files with scaling factors only if both are available
+            // Join BAM files with their specific scaling factor files by sample ID
             ch_combined_input_invariant = ch_bam_for_deeptools_invariant
-                .combine(ch_scaling_factors_invariant)
+                .map { meta, bam, bai -> [meta.id, meta, bam, bai] }  // Add sample ID as key
+                .join(ch_scaling_per_sample_invariant, by: 0)         // Join on sample ID
+                .map { sample_id, meta, bam, bai, scaling_factor_file -> 
+                    [meta + [scaling_factor_file: scaling_factor_file], bam, bai] 
+                }  // Add scaling_factor_file to meta
             
             DEEPTOOLS_BIGWIG_NORM_INVARIANT (
-                ch_combined_input_invariant.map { meta, bam, bai, scaling_factors -> [meta, bam, bai] },
-                ch_combined_input_invariant.map { meta, bam, bai, scaling_factors -> scaling_factors }.first()
+                ch_combined_input_invariant
             )
             ch_versions = ch_versions.mix(DEEPTOOLS_BIGWIG_NORM_INVARIANT.out.versions)
         }
@@ -1207,27 +1234,33 @@ workflow RNASEQ {
             ch_bam_for_deeptools_all_genes = ch_genome_bam
                 .join(ch_genome_bam_index, by: [0])
             
-            // Get scaling factors from the all genes normalization
-            ch_scaling_factors_all_genes = ch_scaling_factors
-                .collect()
-                .map { files ->
-                    // Find all_genes-specific scaling factors first
-                    def all_genes_file = files.find { file ->
-                        def filename = file.name
-                        filename.contains('all_genes') || filename.contains('All_genes') || 
-                        (!filename.contains('invariant') && !filename.contains('Invariant'))
-                    }
-                    // If no all_genes-specific file, use the first available file
-                    return all_genes_file ?: files[0]
+            // Get individual scaling factor files from the all genes normalization
+            // Each file is named: {sample_name}_scaling_factor.txt and contains just the numeric value
+            ch_scaling_per_sample_all_genes = ch_scaling_factors_individual
+                .flatten()
+                .filter { file ->
+                    // Filter for all_genes-specific files (not invariant)
+                    def parent_dir = file.getParent()?.getName() ?: ""
+                    def grandparent_dir = file.getParent()?.getParent()?.getName() ?: ""
+                    // Include files that are NOT from invariant directories
+                    !(parent_dir.contains('invariant') || grandparent_dir.contains('invariant'))
+                }
+                .map { file ->
+                    // Extract sample name from filename: {sample_name}_scaling_factor.txt
+                    def sample_name = file.name.replaceAll('_scaling_factor\\.txt$', '')
+                    [sample_name, file]
                 }
             
-            // Combine BAM files with scaling factors only if both are available
+            // Join BAM files with their specific scaling factor files by sample ID
             ch_combined_input_all_genes = ch_bam_for_deeptools_all_genes
-                .combine(ch_scaling_factors_all_genes)
+                .map { meta, bam, bai -> [meta.id, meta, bam, bai] }  // Add sample ID as key
+                .join(ch_scaling_per_sample_all_genes, by: 0)         // Join on sample ID
+                .map { sample_id, meta, bam, bai, scaling_factor_file -> 
+                    [meta + [scaling_factor_file: scaling_factor_file], bam, bai] 
+                }  // Add scaling_factor_file to meta
             
             DEEPTOOLS_BIGWIG_NORM_ALL_GENES (
-                ch_combined_input_all_genes.map { meta, bam, bai, scaling_factors -> [meta, bam, bai] },
-                ch_combined_input_all_genes.map { meta, bam, bai, scaling_factors -> scaling_factors }.first()
+                ch_combined_input_all_genes
             )
             ch_versions = ch_versions.mix(DEEPTOOLS_BIGWIG_NORM_ALL_GENES.out.versions)
         }

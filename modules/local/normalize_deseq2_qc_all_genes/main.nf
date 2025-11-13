@@ -10,6 +10,7 @@ process NORMALIZE_DESEQ2_QC_ALL_GENES {
 
     output:
     path "scaling_dat.txt"       , emit: scaling_factors
+    path "scaling_factors/*_scaling_factor.txt", emit: scaling_factors_individual
     path "*_normalized_counts.txt", emit: normalized_counts
     path "*_rlog_counts.txt"     , optional:true, emit: rlog_counts
     path "*.RData"               , optional:true, emit: rdata

@@ -7,7 +7,6 @@ process DEEPTOOLS_BIGWIG_NORM {
 
     input:
     tuple val(meta), path(bam), path(bai)
-    path scaling_factors
 
     output:
     path "*.unstranded.norm.bw" , emit: unstranded_bw
@@ -28,8 +27,8 @@ process DEEPTOOLS_BIGWIG_NORM {
 
     if(strandedness == 'unstranded'){
         """
-        # Extract scaling factor for this sample from scaling_factors file
-        scaling=\$(grep "^${meta.id}" $scaling_factors | cut -f2)
+        # Read scaling factor from individual per-sample file
+        scaling=\$(cat ${meta.scaling_factor_file})
         if [ -z "\$scaling" ]; then
             scaling=1.0
         fi
@@ -37,6 +36,7 @@ process DEEPTOOLS_BIGWIG_NORM {
         echo "Sample: ${meta.id}"
         echo "Library strandedness: unstranded"
         echo "Data type: $pe"
+        echo "Scaling factor file: ${meta.scaling_factor_file}"
         echo "Scaling factor: \$scaling"
         echo "Prefix: $prefix"
         echo "Generating unstranded BigWig only (appropriate for unstranded libraries)"
@@ -57,8 +57,8 @@ process DEEPTOOLS_BIGWIG_NORM {
         if( pe == 'single' ){
             if(strandedness == 'forward'){
                 """
-                # Extract scaling factor for this sample from scaling_factors file
-                scaling=\$(grep "^${meta.id}" $scaling_factors | cut -f2)
+                # Read scaling factor from individual per-sample file
+                scaling=\$(cat ${meta.scaling_factor_file})
                 if [ -z "\$scaling" ]; then
                     scaling=1.0
                 fi
@@ -66,6 +66,7 @@ process DEEPTOOLS_BIGWIG_NORM {
                 echo "Sample: ${meta.id}"
                 echo "Library strandedness: forward"
                 echo "Data type: single-end"
+                echo "Scaling factor file: ${meta.scaling_factor_file}"
                 echo "Scaling factor: \$scaling"
                 echo "Prefix: $prefix"
                 echo "Generating all BigWig types (unstranded + strand-specific with forward library logic)"
@@ -106,8 +107,8 @@ process DEEPTOOLS_BIGWIG_NORM {
                 """
             } else {
                 """
-                # Extract scaling factor for this sample from scaling_factors file
-                scaling=\$(grep "^${meta.id}" $scaling_factors | cut -f2)
+                # Read scaling factor from individual per-sample file
+                scaling=\$(cat ${meta.scaling_factor_file})
                 if [ -z "\$scaling" ]; then
                     scaling=1.0
                 fi
@@ -115,6 +116,7 @@ process DEEPTOOLS_BIGWIG_NORM {
                 echo "Sample: ${meta.id}"
                 echo "Library strandedness: reverse"
                 echo "Data type: single-end"
+                echo "Scaling factor file: ${meta.scaling_factor_file}"
                 echo "Scaling factor: \$scaling"
                 echo "Prefix: $prefix"
                 echo "Generating all BigWig types (unstranded + strand-specific with reverse library logic)"
@@ -158,8 +160,8 @@ process DEEPTOOLS_BIGWIG_NORM {
             if( pe == 'paired' ){
                 if(strandedness == 'forward'){
                     """
-                    # Extract scaling factor for this sample from scaling_factors file
-                    scaling=\$(grep "^${meta.id}" $scaling_factors | cut -f2)
+                    # Read scaling factor from individual per-sample file
+                    scaling=\$(cat ${meta.scaling_factor_file})
                     if [ -z "\$scaling" ]; then
                         scaling=1.0
                     fi
@@ -167,6 +169,7 @@ process DEEPTOOLS_BIGWIG_NORM {
                     echo "Sample: ${meta.id}"
                     echo "Library strandedness: forward"
                     echo "Data type: paired-end"
+                    echo "Scaling factor file: ${meta.scaling_factor_file}"
                     echo "Scaling factor: \$scaling"
                     echo "Prefix: $prefix"
                     echo "Generating all BigWig types (unstranded + strand-specific with forward library logic)"
@@ -229,8 +232,8 @@ process DEEPTOOLS_BIGWIG_NORM {
                     """
                 } else {
                     """
-                    # Extract scaling factor for this sample from scaling_factors file
-                    scaling=\$(grep "^${meta.id}" $scaling_factors | cut -f2)
+                    # Read scaling factor from individual per-sample file
+                    scaling=\$(cat ${meta.scaling_factor_file})
                     if [ -z "\$scaling" ]; then
                         scaling=1.0
                     fi
@@ -238,6 +241,7 @@ process DEEPTOOLS_BIGWIG_NORM {
                     echo "Sample: ${meta.id}"
                     echo "Library strandedness: reverse"
                     echo "Data type: paired-end"
+                    echo "Scaling factor file: ${meta.scaling_factor_file}"
                     echo "Scaling factor: \$scaling"
                     echo "Prefix: $prefix"
                     echo "Generating all BigWig types (unstranded + strand-specific with REVERSE library logic)"
