@@ -458,7 +458,8 @@ workflow RNASEQ {
                 
                 // Initialize empty channels for conditional outputs
                 ch_normalization_versions_salmon = Channel.empty()
-                ch_normalization_scaling_factors_salmon = Channel.empty()                ch_deseq2_raw_files_salmon = Channel.empty()
+                ch_normalization_scaling_factors_salmon = Channel.empty()
+                ch_deseq2_raw_files_salmon = Channel.empty()
                 
                 // Run invariant_genes normalization if requested
                 if (normalization_methods.contains('invariant_genes')) {
@@ -540,7 +541,8 @@ workflow RNASEQ {
                 
                 // Initialize empty channels for conditional outputs
                 ch_normalization_versions_genome = Channel.empty()
-                ch_normalization_scaling_factors_genome = Channel.empty()                ch_deseq2_raw_files_genome = Channel.empty()
+                ch_normalization_scaling_factors_genome = Channel.empty()
+                ch_deseq2_raw_files_genome = Channel.empty()
                 
                 // Run invariant_genes normalization if requested
                 if (normalization_methods.contains('invariant_genes')) {
@@ -673,7 +675,8 @@ workflow RNASEQ {
                 
                 // Initialize empty channels for conditional outputs
                 ch_normalization_versions_hisat2 = Channel.empty()
-                ch_normalization_scaling_factors_hisat2 = Channel.empty()                ch_deseq2_raw_files_hisat2 = Channel.empty()
+                ch_normalization_scaling_factors_hisat2 = Channel.empty()
+                ch_deseq2_raw_files_hisat2 = Channel.empty()
                 
                 // Run invariant_genes normalization if requested
                 if (normalization_methods.contains('invariant_genes')) {
@@ -1076,7 +1079,8 @@ workflow RNASEQ {
             
             // Initialize empty channels for conditional outputs
             ch_normalization_versions_pseudo = Channel.empty()
-            ch_normalization_scaling_factors_pseudo = Channel.empty()            ch_deseq2_raw_files_pseudo = Channel.empty()
+            ch_normalization_scaling_factors_pseudo = Channel.empty()
+            ch_deseq2_raw_files_pseudo = Channel.empty()
             
             // Determine the quantifier for file naming (must match what was actually used for quantification)
             // This is critical for MultiQC to find the correct files
