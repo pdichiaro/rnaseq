@@ -547,7 +547,7 @@ workflow RNASEQ {
                 // Run invariant_genes normalization if requested
                 if (normalization_methods.contains('invariant_genes')) {
                     NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT (
-                        MERGE_GENOME_COUNTS.out.merged_counts.filter { it.name.contains('genome_exon_counts_merged.txt') }.first(),
+                        MERGE_GENOME_COUNTS.out.merged_counts.flatten().filter { it.name.contains('genome_exon_counts_merged.txt') }.first(),
                         "STAR_Genome"
                     )
                     
@@ -563,7 +563,7 @@ workflow RNASEQ {
                 // Run all_genes normalization if requested or as default
                 if (normalization_methods.contains('all_genes') || (!normalization_methods.contains('invariant_genes') && !normalization_methods.contains('all_genes'))) {
                     NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT (
-                        MERGE_GENOME_COUNTS.out.merged_counts.filter { it.name.contains('genome_exon_counts_merged.txt') }.first(),
+                        MERGE_GENOME_COUNTS.out.merged_counts.flatten().filter { it.name.contains('genome_exon_counts_merged.txt') }.first(),
                         "STAR_Genome"
                     )
                     
@@ -681,7 +681,7 @@ workflow RNASEQ {
                 // Run invariant_genes normalization if requested
                 if (normalization_methods.contains('invariant_genes')) {
                     NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT (
-                        MERGE_GENOME_COUNTS_HISAT2.out.merged_counts.filter { it.name.contains('genome_exon_counts_merged.txt') }.first(),
+                        MERGE_GENOME_COUNTS_HISAT2.out.merged_counts.flatten().filter { it.name.contains('genome_exon_counts_merged.txt') }.first(),
                         "HISAT2_Genome"
                     )
                     
@@ -697,7 +697,7 @@ workflow RNASEQ {
                 // Run all_genes normalization if requested or as default
                 if (normalization_methods.contains('all_genes') || (!normalization_methods.contains('invariant_genes') && !normalization_methods.contains('all_genes'))) {
                     NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT (
-                        MERGE_GENOME_COUNTS_HISAT2.out.merged_counts.filter { it.name.contains('genome_exon_counts_merged.txt') }.first(),
+                        MERGE_GENOME_COUNTS_HISAT2.out.merged_counts.flatten().filter { it.name.contains('genome_exon_counts_merged.txt') }.first(),
                         "HISAT2_Genome"
                     )
                     
