@@ -280,10 +280,40 @@ process_rsem_file <- function(data, file_type, annotation_data) {
             }
         }
         
-        # Check for any remaining .x/.y column names
+        # Check for any remaining .x/.y column names and remove them
         remaining_xy_cols <- grep("\\.[xy]$", colnames(merged_data), value = TRUE)
         if (length(remaining_xy_cols) > 0) {
-            cat("INFO: Other .x/.y columns found (not gene_name):", paste(remaining_xy_cols, collapse = ", "), "\n")
+            cat("INFO: Other .x/.y columns found (not gene_name or strand):", paste(remaining_xy_cols, collapse = ", "), "\n")
+            cat("REMOVING: Dropping remaining .x/.y duplicate columns...\n")
+            
+            # For each .x/.y pair, keep only the .x version (or .y if .x doesn't exist)
+            base_names <- unique(gsub("\\.[xy]$", "", remaining_xy_cols))
+            for (base_name in base_names) {
+                x_col <- paste0(base_name, ".x")
+                y_col <- paste0(base_name, ".y")
+                
+                if (x_col %in% colnames(merged_data) && y_col %in% colnames(merged_data)) {
+                    # Both exist - consolidate by preferring non-NA values
+                    x_vals <- merged_data[[x_col]]
+                    y_vals <- merged_data[[y_col]]
+                    consolidated <- ifelse(!is.na(x_vals) & x_vals != "", x_vals, y_vals)
+                    merged_data[[base_name]] <- consolidated
+                    merged_data[[x_col]] <- NULL
+                    merged_data[[y_col]] <- NULL
+                    cat("  Consolidated:", x_col, "+", y_col, "->", base_name, "\n")
+                } else if (x_col %in% colnames(merged_data)) {
+                    # Only .x exists
+                    merged_data[[base_name]] <- merged_data[[x_col]]
+                    merged_data[[x_col]] <- NULL
+                    cat("  Renamed:", x_col, "->", base_name, "\n")
+                } else if (y_col %in% colnames(merged_data)) {
+                    # Only .y exists
+                    merged_data[[base_name]] <- merged_data[[y_col]]
+                    merged_data[[y_col]] <- NULL
+                    cat("  Renamed:", y_col, "->", base_name, "\n")
+                }
+            }
+            cat("SUCCESS: All .x/.y columns consolidated\n")
         }
         
         # Check and ensure gene_name column exists
