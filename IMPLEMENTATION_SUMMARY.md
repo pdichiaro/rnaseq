@@ -27,8 +27,9 @@ ch_combined_input = ch_bam
     }
 ```
 
-**New approach (Value-based, matching mmrnaseq):**
+**New approach (Value-based, using mmrnaseq strategy):**
 ```groovy
+// Extract scaling factors from files
 ch_scaling_per_sample = ch_scaling_factors_individual
     .flatten()
     .filter { file ->
@@ -42,18 +43,26 @@ ch_scaling_per_sample = ch_scaling_factors_individual
         [sample_name, scaling_value]
     }
 
-ch_combined_input = ch_bam
-    .map { meta, bam, bai -> [meta.id, meta, bam, bai] }
-    .join(ch_scaling_per_sample, by: 0)
-    .map { sample_id, meta, bam, bai, scaling -> 
-        [meta, bam, bai, scaling]  // Pass scaling value instead of file
+// Prepare BAM channel
+ch_bam_for_deeptools = ch_genome_bam
+    .join(ch_genome_bam_index, by: [0])
+
+// Combine using mmrnaseq strategy
+ch_combined_input = ch_bam_for_deeptools
+    .combine(ch_scaling_per_sample)
+    .map { meta, bam, bai, sample_id, scaling -> 
+        meta.id == sample_id ? [meta, bam, bai, scaling] : null
     }
+    .filter { it != null }
 ```
 
 #### Key Differences:
 1. **File vs Value**: The new approach reads the scaling factor value from the file in the channel operation and passes it as a value to the process
 2. **Meta map**: No longer adding `scaling_factor_file` to the meta map
 3. **Process input**: The process now receives a `val(scaling)` instead of accessing a file path from meta
+4. **Channel joining strategy**: Uses `.combine()` + conditional `.map()` instead of `.join()` (following mmrnaseq pattern)
+   - **Advantage**: More flexible and handles missing samples gracefully
+   - **Pattern**: Cartesian product filtered by matching IDs
 
 ### 2. Process Module Updates (`modules/local/deeptools_bw_norm/main.nf`)
 
@@ -143,6 +152,27 @@ def sample_name = file.name.replaceAll('_scaling_factor\\.txt$', '')
 
 This regex removes the `_scaling_factor.txt` suffix to get the sample ID for channel joining.
 
+## Comparison with mmrnaseq Implementation
+
+### Similarities (Aligned Strategy):
+1. **Value-based passing**: Both pipelines read scaling factors from files and pass as values
+2. **Channel combination**: Both use `.combine()` + conditional `.map()` for matching BAMs with scaling factors
+3. **Process signature**: `tuple val(meta), path(bam), path(bai), val(scaling)` is identical
+4. **Single computation**: Scaling factors computed once and reused
+
+### Differences (Enhanced Functionality):
+1. **Multiple normalization methods**: nf-core/rnaseq supports both `invariant_genes` and `all_genes` simultaneously
+   - mmrnaseq: Single normalization output
+   - nf-core/rnaseq: Separate outputs for each method
+   
+2. **Source of scaling factors**:
+   - mmrnaseq: Uses `NORMALIZE_COUNTS_INTRON_EXON` which outputs `scaling_dat.txt`
+   - nf-core/rnaseq: Uses `DESEQ2_QC_SALMON` which outputs individual `*_scaling_factor.txt` files
+
+3. **Output organization**:
+   - mmrnaseq: Single set of normalized BigWigs
+   - nf-core/rnaseq: Organized by normalization method subdirectories
+
 ## Benefits of This Approach
 
 1. **Consistency with mmrnaseq**: The BigWig generation now uses the same normalization methodology as the mmrnaseq pipeline
@@ -150,6 +180,7 @@ This regex removes the `_scaling_factor.txt` suffix to get the sample ID for cha
 3. **Flexibility**: Supports multiple normalization methods simultaneously
 4. **Maintainability**: Clear separation between invariant genes and all genes approaches
 5. **Simpler Process Logic**: The process receives a clean value rather than having to read from a file
+6. **Robust Channel Operations**: Using `.combine()` with filtering handles edge cases better than `.join()`
 
 ## Testing Recommendations
 

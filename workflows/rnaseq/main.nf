@@ -1123,10 +1123,12 @@ workflow RNASEQ {
         def normalization_methods = params.normalization_method instanceof List ? 
             params.normalization_method : params.normalization_method.split(',').collect{it.trim()}
         
+        // Prepare BAM channel with BAI
+        ch_bam_for_deeptools = ch_genome_bam
+            .join(ch_genome_bam_index, by: [0])
+        
         if (normalization_methods.contains('invariant_genes')) {
-            ch_bam_for_deeptools_invariant = ch_genome_bam
-                .join(ch_genome_bam_index, by: [0])
-            
+            // Extract scaling factors for invariant genes normalization
             ch_scaling_per_sample_invariant = ch_scaling_factors_individual
                 .flatten()
                 .filter { file ->
@@ -1140,12 +1142,13 @@ workflow RNASEQ {
                     [sample_name, scaling_value]
                 }
             
-            ch_combined_input_invariant = ch_bam_for_deeptools_invariant
-                .map { meta, bam, bai -> [meta.id, meta, bam, bai] }
-                .join(ch_scaling_per_sample_invariant, by: 0)
-                .map { sample_id, meta, bam, bai, scaling -> 
-                    [meta, bam, bai, scaling] 
+            // Combine BAM files with scaling factors using mmrnaseq strategy
+            ch_combined_input_invariant = ch_bam_for_deeptools
+                .combine(ch_scaling_per_sample_invariant)
+                .map { meta, bam, bai, sample_id, scaling -> 
+                    meta.id == sample_id ? [meta, bam, bai, scaling] : null
                 }
+                .filter { it != null }
             
             DEEPTOOLS_BIGWIG_NORM_INVARIANT (
                 ch_combined_input_invariant
@@ -1154,9 +1157,7 @@ workflow RNASEQ {
         }
         
         if (normalization_methods.contains('all_genes') || (!normalization_methods.contains('invariant_genes') && !normalization_methods.contains('all_genes'))) {
-            ch_bam_for_deeptools_all_genes = ch_genome_bam
-                .join(ch_genome_bam_index, by: [0])
-            
+            // Extract scaling factors for all genes normalization
             ch_scaling_per_sample_all_genes = ch_scaling_factors_individual
                 .flatten()
                 .filter { file ->
@@ -1170,12 +1171,13 @@ workflow RNASEQ {
                     [sample_name, scaling_value]
                 }
             
-            ch_combined_input_all_genes = ch_bam_for_deeptools_all_genes
-                .map { meta, bam, bai -> [meta.id, meta, bam, bai] }
-                .join(ch_scaling_per_sample_all_genes, by: 0)
-                .map { sample_id, meta, bam, bai, scaling -> 
-                    [meta, bam, bai, scaling] 
+            // Combine BAM files with scaling factors using mmrnaseq strategy
+            ch_combined_input_all_genes = ch_bam_for_deeptools
+                .combine(ch_scaling_per_sample_all_genes)
+                .map { meta, bam, bai, sample_id, scaling -> 
+                    meta.id == sample_id ? [meta, bam, bai, scaling] : null
                 }
+                .filter { it != null }
             
             DEEPTOOLS_BIGWIG_NORM_ALL_GENES (
                 ch_combined_input_all_genes
