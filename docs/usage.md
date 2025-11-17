@@ -63,8 +63,8 @@ CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz,a
 | Category | Parameter | Default | Description |
 |----------|-----------|---------|-------------|
 | **Alignment** | `--aligner` | `star` | Alignment method (star/hisat2) |
-| | `--quantification` | `salmon` | Quantification method |
-| | `--pseudo_aligner` | `null` | Pseudo-aligner (salmon/kallisto) |
+| | `--quantification` | `genome` | Quantification method (genome/rsem) |
+| | `--pseudo_aligner` | `null` | Pseudo-aligner (kallisto) |
 | **Quality** | `--trimmer` | `trimgalore` | Trimming tool |
 | | `--min_trimmed_reads` | `10000` | Min reads after trimming |
 | | `--skip_qc` | `false` | Skip all QC steps |

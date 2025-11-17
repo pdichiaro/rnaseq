@@ -152,13 +152,6 @@
                     "fa_icon": "fas fa-bezier-curve",
                     "description": "Path to directory or tar.gz archive for pre-built RSEM index."
                 },
-                "salmon_index": {
-                    "type": "string",
-                    "format": "path",
-                    "exists": true,
-                    "fa_icon": "fas fa-bezier-curve",
-                    "description": "Path to directory or tar.gz archive for pre-built Salmon index."
-                },
                 "kallisto_index": {
                     "type": "string",
                     "format": "path",
@@ -179,19 +172,19 @@
                     "type": "boolean",
                     "fa_icon": "fas fa-code-branch",
                     "description": "Specify if your GTF annotation is in GENCODE format.",
-                    "help_text": "If your GTF file is in GENCODE format and you want to run Salmon (using `--pseudo_aligner salmon`), enable this parameter to build the Salmon index correctly."
+                    "help_text": "If your GTF file is in GENCODE format, enable this parameter to properly process the file."
                 },
                 "gtf_extra_attributes": {
                     "type": "string",
                     "default": "gene_name",
                     "fa_icon": "fas fa-plus-square",
-                    "description": "By default, the pipeline uses the `gene_name` field to obtain additional gene identifiers from the input GTF file when running Salmon.",
-                    "help_text": "Modify this parameter to change which attributes are extracted from the GTF file when running Salmon. You can specify multiple values separated by commas (e.g., `--gtf_extra_attributes gene_id,transcript_id`)."
+                    "description": "By default, the pipeline uses the `gene_name` field to obtain additional gene identifiers from the input GTF file.",
+                    "help_text": "Modify this parameter to change which attributes are extracted from the GTF file. You can specify multiple values separated by commas (e.g., `--gtf_extra_attributes gene_id,transcript_id`)."
                 },
                 "gtf_group_features": {
                     "type": "string",
                     "default": "gene_id",
-                    "description": "Define the attribute type used to group features in the GTF file when running Salmon.",
+                    "description": "Define the attribute type used to group features in the GTF file.",
                     "fa_icon": "fas fa-layer-group"
                 },
                 "featurecounts_group_type": {
@@ -395,16 +388,16 @@
                 },
                 "pseudo_aligner": {
                     "type": "string",
-                    "description": "Specifies the pseudo aligner to use - available options are 'salmon' and 'kallisto'. Can run independently or in addition to '--aligner'.",
+                    "description": "Specifies the pseudo aligner to use - available option is 'kallisto'. Can run independently or in addition to '--aligner'.",
                     "fa_icon": "fas fa-hamburger",
-                    "enum": ["salmon", "kallisto"]
+                    "enum": ["kallisto"]
                 },
                 "quantification": {
                     "type": "string",
                     "default": "genome",
-                    "description": "Specifies the quantification method(s) to use with alignment-based approaches. Can be a single method or comma-separated list - available options are 'genome', 'rsem', and 'salmon'. Examples: 'genome', 'genome,rsem', 'genome,rsem,salmon'.",
+                    "description": "Specifies the quantification method(s) to use with alignment-based approaches. Can be a single method or comma-separated list - available options are 'genome' and 'rsem'. Examples: 'genome', 'genome,rsem'.",
                     "fa_icon": "fas fa-calculator",
-                    "pattern": "^(genome|rsem|salmon)(,\\s*(genome|rsem|salmon))*$"
+                    "pattern": "^(genome|rsem)(,\\s*(genome|rsem))*$"
                 },
                 "pseudo_aligner_kmer_size": {
                     "type": "integer",
@@ -422,30 +415,6 @@
                     "type": "boolean",
                     "fa_icon": "fas fa-ban",
                     "description": "When using pre-built STAR indices do not re-extract and use splice junctions from the GTF file."
-                },
-                "salmon_quant_libtype": {
-                    "type": "string",
-                    "fa_icon": "fas fa-fast-forward",
-                    "description": " Override Salmon library type inferred based on strandedness defined in meta object.",
-                    "help_text": "Refer to the [Salmon documentation](https://salmon.readthedocs.io/en/latest/library_type.html) for details on library types.",
-                    "enum": [
-                        "A",
-                        "IS",
-                        "ISF",
-                        "ISR",
-                        "IU",
-                        "MS",
-                        "MSF",
-                        "MSR",
-                        "MU",
-                        "OS",
-                        "OSF",
-                        "OSR",
-                        "OU",
-                        "SF",
-                        "SR",
-                        "U"
-                    ]
                 },
                 "min_mapped_reads": {
                     "type": "number",

@@ -14,7 +14,6 @@ include { UNTAR as UNTAR_SORTMERNA_INDEX    } from '../../../modules/nf-core/unt
 include { UNTAR as UNTAR_STAR_INDEX         } from '../../../modules/nf-core/untar'
 include { UNTAR as UNTAR_RSEM_INDEX         } from '../../../modules/nf-core/untar'
 include { UNTAR as UNTAR_HISAT2_INDEX       } from '../../../modules/nf-core/untar'
-include { UNTAR as UNTAR_SALMON_INDEX       } from '../../../modules/nf-core/untar'
 include { UNTAR as UNTAR_KALLISTO_INDEX     } from '../../../modules/nf-core/untar'
 
 include { CUSTOM_CATADDITIONALFASTA         } from '../../../modules/nf-core/custom/catadditionalfasta'
@@ -25,7 +24,6 @@ include { SORTMERNA as SORTMERNA_INDEX      } from '../../../modules/nf-core/sor
 include { STAR_GENOMEGENERATE               } from '../../../modules/nf-core/star/genomegenerate'
 include { HISAT2_EXTRACTSPLICESITES         } from '../../../modules/nf-core/hisat2/extractsplicesites'
 include { HISAT2_BUILD                      } from '../../../modules/nf-core/hisat2/build'
-include { SALMON_INDEX                      } from '../../../modules/nf-core/salmon/index'
 include { KALLISTO_INDEX                    } from '../../../modules/nf-core/kallisto/index'
 include { RSEM_PREPAREREFERENCE as RSEM_PREPAREREFERENCE_GENOME } from '../../../modules/nf-core/rsem/preparereference'
 include { RSEM_PREPAREREFERENCE as MAKE_TRANSCRIPTS_FASTA       } from '../../../modules/nf-core/rsem/preparereference'
@@ -53,7 +51,6 @@ workflow PREPARE_GENOME {
     sortmerna_fasta_list     // file: /path/to/sortmerna_fasta_list.txt
     star_index               // directory: /path/to/star/index/
     rsem_index               // directory: /path/to/rsem/index/
-    salmon_index             // directory: /path/to/salmon/index/
     kallisto_index           // directory: /path/to/kallisto/index/
     hisat2_index             // directory: /path/to/hisat2/index/
     bbsplit_index            // directory: /path/to/bbsplit/index/
@@ -61,8 +58,8 @@ workflow PREPARE_GENOME {
     gencode                  // boolean: whether the genome is from GENCODE
     featurecounts_group_type // string: The attribute type used to group feature types in the GTF file when generating the biotype plot with featureCounts
     aligner                  // string: Specifies the alignment algorithm to use - available options are 'star' and 'hisat2'
-    pseudo_aligner           // string: Specifies the pseudo aligner to use - available options are 'salmon'. Runs in addition to '--aligner'
-    quantification           // string: Specifies the quantification method to use with alignment-based approaches - available options are 'genome', 'rsem', and 'salmon'
+    pseudo_aligner           // string: Specifies the pseudo aligner to use - available options are 'kallisto'. Runs in addition to '--aligner'
+    quantification           // string: Specifies the quantification method to use with alignment-based approaches - available options are 'genome' and 'rsem'
     skip_gtf_filter          // boolean: Skip filtering of GTF for valid scaffolds and/ or transcript IDs
     skip_bbsplit             // boolean: Skip BBSplit for removal of non-reference genome reads
     skip_sortmerna           // boolean: Skip sortmerna for removal of reads mapping to sequences in sortmerna_fasta_list
@@ -404,33 +401,8 @@ workflow PREPARE_GENOME {
         }
     }
 
-    //------------------------------------------------------
-    // 14) Salmon index -> can skip genome if transcript_fasta is enough
-    //------------------------------------------------------
-
-    ch_salmon_index = Channel.empty()
-    if (salmon_index) {
-        if (salmon_index.endsWith('.tar.gz')) {
-            ch_salmon_index = UNTAR_SALMON_INDEX ( [ [:], salmon_index ] ).untar.map { it[1] }
-            ch_versions     = ch_versions.mix(UNTAR_SALMON_INDEX.out.versions)
-        } else {
-            ch_salmon_index = Channel.value(file(salmon_index))
-        }
-    } else if ('salmon' in prepare_tool_indices) {
-        if (ch_transcript_fasta && fasta_provided) {
-            // build from transcript FASTA + genome FASTA
-            ch_salmon_index = SALMON_INDEX(ch_fasta, ch_transcript_fasta).index
-            ch_versions     = ch_versions.mix(SALMON_INDEX.out.versions)
-        }
-        else if (ch_transcript_fasta) {
-            // some Salmon module can run with just a transcript FASTA
-            ch_salmon_index = SALMON_INDEX([], ch_transcript_fasta).index
-            ch_versions     = ch_versions.mix(SALMON_INDEX.out.versions)
-        }
-    }
-
     //--------------------------------------------------
-    // 15) Kallisto index -> only needs transcript FASTA
+    // 14) Kallisto index -> only needs transcript FASTA
     //--------------------------------------------------
     ch_kallisto_index = Channel.empty()
     if (kallisto_index) {
@@ -469,7 +441,6 @@ workflow PREPARE_GENOME {
     star_index       = ch_star_index             // channel: path(star/index/)
     rsem_index       = ch_rsem_index             // channel: path(rsem/index/)
     hisat2_index     = ch_hisat2_index           // channel: path(hisat2/index/)
-    salmon_index     = ch_salmon_index           // channel: path(salmon/index/)
     kallisto_index   = ch_kallisto_index         // channel: [ meta, path(kallisto/index/) ]
     versions         = ch_versions.ifEmpty(null) // channel: [ versions.yml ]
 }

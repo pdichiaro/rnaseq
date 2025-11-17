@@ -67,6 +67,7 @@ include { SUBREAD_FEATURECOUNTS as SUBREAD_FEATURECOUNTS_EXTRA } from '../../mod
 include { KRAKEN2_KRAKEN2 as KRAKEN2 } from '../../modules/nf-core/kraken2/kraken2/main'
 include { BRACKEN_BRACKEN as BRACKEN } from '../../modules/nf-core/bracken/bracken/main'
 include { MULTIQC                    } from '../../modules/nf-core/multiqc'
+include { MULTIQC_WITH_SUBFOLDERS    } from '../../modules/local/multiqc_with_subfolders'
 include { BEDTOOLS_GENOMECOV as BEDTOOLS_GENOMECOV_FW          } from '../../modules/nf-core/bedtools/genomecov'
 include { BEDTOOLS_GENOMECOV as BEDTOOLS_GENOMECOV_REV         } from '../../modules/nf-core/bedtools/genomecov'
 include { SAMTOOLS_INDEX                                       } from '../../modules/nf-core/samtools/index'
@@ -83,7 +84,6 @@ include { BAM_MARKDUPLICATES_PICARD        } from '../../subworkflows/nf-core/ba
 include { BAM_RSEQC                        } from '../../subworkflows/nf-core/bam_rseqc'
 include { BEDGRAPH_BEDCLIP_BEDGRAPHTOBIGWIG as BEDGRAPH_BEDCLIP_BEDGRAPHTOBIGWIG_FORWARD } from '../../subworkflows/nf-core/bedgraph_bedclip_bedgraphtobigwig'
 include { BEDGRAPH_BEDCLIP_BEDGRAPHTOBIGWIG as BEDGRAPH_BEDCLIP_BEDGRAPHTOBIGWIG_REVERSE } from '../../subworkflows/nf-core/bedgraph_bedclip_bedgraphtobigwig'
-include { QUANTIFY_PSEUDO_ALIGNMENT as QUANTIFY_STAR_SALMON } from '../../subworkflows/nf-core/quantify_pseudo_alignment'
 include { QUANTIFY_PSEUDO_ALIGNMENT                         } from '../../subworkflows/nf-core/quantify_pseudo_alignment'
 include { FASTQ_QC_TRIM_FILTER_SETSTRANDEDNESS              } from '../../subworkflows/nf-core/fastq_qc_trim_filter_setstrandedness'
 
@@ -114,7 +114,6 @@ workflow RNASEQ {
     ch_star_index        // channel: path(star/index/)
     ch_rsem_index        // channel: path(rsem/index/)
     ch_hisat2_index      // channel: path(hisat2/index/)
-    ch_salmon_index      // channel: path(salmon/index/)
     ch_kallisto_index    // channel: [ meta, path(kallisto/index/) ]
     ch_bbsplit_index     // channel: path(bbsplit/index/)
     ch_ribo_db           // channel: path(sortmerna_fasta_list)
@@ -128,8 +127,8 @@ workflow RNASEQ {
     //
     //
     def valid_aligners = ['star', 'hisat2']
-    def valid_pseudo_aligners = ['salmon', 'kallisto']
-    def valid_quantifications = ['genome', 'rsem', 'salmon']
+    def valid_pseudo_aligners = ['kallisto']
+    def valid_quantifications = ['genome', 'rsem']
     def valid_normalization_methods = ['all_genes', 'invariant_genes', 'all_genes, invariant_genes']
     
     if (params.aligner && !valid_aligners.contains(params.aligner)) {
@@ -172,10 +171,13 @@ workflow RNASEQ {
     }
     
     if (!params.pseudo_aligner && !params.aligner) {
-        error "Must specify at least one of: aligner (star/hisat2) or pseudo_aligner (salmon/kallisto)."
+        error "Must specify at least one of: aligner (star/hisat2) or pseudo_aligner (kallisto)."
     }
 
     ch_multiqc_files = Channel.empty()
+    ch_multiqc_star_files = Channel.empty()
+    ch_multiqc_hisat2_files = Channel.empty()
+    ch_multiqc_kallisto_files = Channel.empty()
     ch_trim_status = Channel.empty()
     ch_map_status = Channel.empty()
     ch_strand_status = Channel.empty()
@@ -227,14 +229,11 @@ workflow RNASEQ {
     //
     //
 
-    salmon_index_available = params.salmon_index || (!params.skip_pseudo_alignment && params.pseudo_aligner == 'salmon')
-
     FASTQ_QC_TRIM_FILTER_SETSTRANDEDNESS (
         ch_fastq,
         ch_fasta,
         ch_transcript_fasta,
         ch_gtf,
-        ch_salmon_index,
         ch_sortmerna_index,
         ch_bbsplit_index,
         ch_ribo_db,
@@ -242,7 +241,7 @@ workflow RNASEQ {
         params.skip_fastqc || params.skip_qc,
         params.skip_trimming,
         params.skip_umi_extract,
-        !salmon_index_available,
+        true,
         false,
         params.trimmer,
         params.min_trimmed_reads,
@@ -299,7 +298,7 @@ workflow RNASEQ {
         ch_unprocessed_bams              = ch_genome_bam.join(ch_transcriptome_bam)
         ch_star_log                      = ALIGN_STAR.out.log_final
         ch_unaligned_sequences           = ALIGN_STAR.out.fastq
-        ch_multiqc_files                 = ch_multiqc_files.mix(ch_star_log.collect{it[1]})
+        ch_multiqc_star_files            = ch_multiqc_star_files.mix(ch_star_log.collect{it[1]})
 
         ch_versions = ch_versions.mix(ALIGN_STAR.out.versions)
 
@@ -428,98 +427,6 @@ workflow RNASEQ {
 
         }
         
-        if (quantification_methods.contains('salmon')) {
-            //
-
-            //
-            QUANTIFY_STAR_SALMON (
-                ch_samplesheet.map { [ [:], it ] },
-                ch_transcriptome_bam,
-                ch_dummy_file,
-                ch_transcript_fasta,
-                ch_gtf,
-                params.gtf_group_features,
-                params.gtf_extra_attributes,
-                'salmon',
-                true,
-                params.salmon_quant_libtype ?: '',
-                params.kallisto_quant_fraglen,
-                params.kallisto_quant_fraglen_sd,
-                ch_annotation_matrix,
-                ch_chrom_sizes
-            )
-            ch_versions = ch_versions.mix(QUANTIFY_STAR_SALMON.out.versions)
-
-            if (!params.skip_qc & !params.skip_deseq2_qc) {
-                
-                def normalization_methods = params.normalization_method instanceof List ? 
-                    params.normalization_method : params.normalization_method.split(',').collect{it.trim()}
-                
-                
-                ch_normalization_versions_salmon = Channel.empty()
-                ch_normalization_scaling_factors_salmon = Channel.empty()
-                ch_deseq2_raw_files_salmon = Channel.empty()
-                
-                
-                if (normalization_methods.contains('invariant_genes')) {
-                    NORMALIZE_DESEQ2_QC_INVARIANT_GENES (
-                        QUANTIFY_STAR_SALMON.out.counts_gene,
-                        "STAR_Salmon"
-                    )
-                    
-                    
-                    ch_deseq2_raw_files_salmon = ch_deseq2_raw_files_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.read_dist_norm_txt)
-                    ch_deseq2_raw_files_salmon = ch_deseq2_raw_files_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.sample_distances_txt)
-                    ch_deseq2_raw_files_salmon = ch_deseq2_raw_files_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.pca_all_genes_txt)
-                    ch_deseq2_raw_files_salmon = ch_deseq2_raw_files_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.pca_top_genes_txt)
-                    
-                    ch_normalization_versions_salmon = ch_normalization_versions_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.versions)
-                    ch_normalization_scaling_factors_salmon = ch_normalization_scaling_factors_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.scaling_factors)
-                    ch_normalization_scaling_factors_salmon = ch_normalization_scaling_factors_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.scaling_factors_individual)
-                    ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.scaling_factors_individual)
-                }
-                
-                
-                if (normalization_methods.contains('all_genes') || (!normalization_methods.contains('invariant_genes') && !normalization_methods.contains('all_genes'))) {
-                    NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT (
-                        QUANTIFY_STAR_SALMON.out.counts_gene,
-                        "STAR_Salmon"
-                    )
-                    
-                    
-                    ch_deseq2_raw_files_salmon = ch_deseq2_raw_files_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.read_dist_norm_txt)
-                    ch_deseq2_raw_files_salmon = ch_deseq2_raw_files_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.sample_distances_txt)
-                    ch_deseq2_raw_files_salmon = ch_deseq2_raw_files_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_all_genes_txt)
-                    ch_deseq2_raw_files_salmon = ch_deseq2_raw_files_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_top_genes_txt)
-                    
-                    ch_normalization_versions_salmon = ch_normalization_versions_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.versions)
-                    ch_normalization_scaling_factors_salmon = ch_normalization_scaling_factors_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors)
-                    ch_normalization_scaling_factors_salmon = ch_normalization_scaling_factors_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors_individual)
-                    ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors_individual)
-                }
-                
-                
-                DESEQ2_SECTION_HEADER_STAR_SALMON (
-                    "star_salmon"
-                )
-                ch_multiqc_files = ch_multiqc_files.mix(DESEQ2_SECTION_HEADER_STAR_SALMON.out.section_header)
-                ch_versions = ch_versions.mix(DESEQ2_SECTION_HEADER_STAR_SALMON.out.versions)
-                
-                
-                DESEQ2_TRANSFORM_STAR_SALMON (
-                    ch_deseq2_raw_files_salmon.flatten(),
-                    ch_deseq2_pca_header,
-                    ch_deseq2_clustering_header,
-                    ch_deseq2_read_dist_header
-                )
-                ch_multiqc_files = ch_multiqc_files.mix(DESEQ2_TRANSFORM_STAR_SALMON.out.multiqc_files)
-                ch_versions = ch_versions.mix(DESEQ2_TRANSFORM_STAR_SALMON.out.versions.first())
-                
-                
-                ch_versions = ch_versions.mix(ch_normalization_versions_salmon)
-                ch_scaling_factors = ch_scaling_factors.mix(ch_normalization_scaling_factors_salmon)            }
-
-        }
         
         if (quantification_methods.contains('genome')) {
             //
@@ -622,7 +529,7 @@ workflow RNASEQ {
         ch_genome_bam_index    = ch_genome_bam_index.mix(params.bam_csi_index ? FASTQ_ALIGN_HISAT2.out.csi : FASTQ_ALIGN_HISAT2.out.bai)
         ch_unprocessed_bams    = ch_genome_bam.map { meta, bam -> [ meta, bam, '' ] }
         ch_unaligned_sequences = FASTQ_ALIGN_HISAT2.out.fastq
-        ch_multiqc_files = ch_multiqc_files.mix(FASTQ_ALIGN_HISAT2.out.summary.collect{it[1]})
+        ch_multiqc_hisat2_files = ch_multiqc_hisat2_files.mix(FASTQ_ALIGN_HISAT2.out.summary.collect{it[1]})
 
         ch_versions = ch_versions.mix(FASTQ_ALIGN_HISAT2.out.versions)
 
@@ -1025,11 +932,8 @@ workflow RNASEQ {
     //
     if (!params.skip_pseudo_alignment && params.pseudo_aligner) {
 
-        if (params.pseudo_aligner == 'salmon') {
-            ch_pseudo_index = ch_salmon_index
-        } else {
-            ch_pseudo_index = ch_kallisto_index
-        }
+        // Only kallisto is supported as pseudo-aligner
+        ch_pseudo_index = ch_kallisto_index
 
         QUANTIFY_PSEUDO_ALIGNMENT (
             ch_samplesheet.map { [ [:], it ] },
@@ -1041,14 +945,14 @@ workflow RNASEQ {
             params.gtf_extra_attributes,
             params.pseudo_aligner,
             false,
-            params.salmon_quant_libtype ?: '',
+            '',
             params.kallisto_quant_fraglen,
             params.kallisto_quant_fraglen_sd,
             ch_annotation_matrix,
             ch_chrom_sizes
         )
         ch_counts_gene = QUANTIFY_PSEUDO_ALIGNMENT.out.counts_gene
-        ch_multiqc_files = ch_multiqc_files.mix(QUANTIFY_PSEUDO_ALIGNMENT.out.multiqc.collect{it[1]})
+        ch_multiqc_kallisto_files = ch_multiqc_kallisto_files.mix(QUANTIFY_PSEUDO_ALIGNMENT.out.multiqc.collect{it[1]})
         ch_versions = ch_versions.mix(QUANTIFY_PSEUDO_ALIGNMENT.out.versions)
         
         if (params.pseudo_aligner == 'kallisto') {
@@ -1272,15 +1176,18 @@ workflow RNASEQ {
             .collectFile(name: 'name_replacement.txt', newLine: true)
             .ifEmpty([])
 
-        MULTIQC (
+        MULTIQC_WITH_SUBFOLDERS (
             ch_multiqc_files.flatten().collect(),
+            ch_multiqc_star_files.flatten().collect().ifEmpty([]),
+            ch_multiqc_hisat2_files.flatten().collect().ifEmpty([]),
+            ch_multiqc_kallisto_files.flatten().collect().ifEmpty([]),
             ch_multiqc_config.toList(),
             ch_multiqc_custom_config.toList(),
             ch_multiqc_logo.toList(),
             ch_name_replacements,
             []
         )
-        ch_multiqc_report = MULTIQC.out.report
+        ch_multiqc_report = MULTIQC_WITH_SUBFOLDERS.out.report
     }
 
     //

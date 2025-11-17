@@ -22,7 +22,6 @@ params.sortmerna_index  = getGenomeAttribute('sortmerna')
 params.star_index       = getGenomeAttribute('star')
 params.rsem_index       = getGenomeAttribute('rsem')
 params.hisat2_index     = getGenomeAttribute('hisat2')
-params.salmon_index     = getGenomeAttribute('salmon')
 params.kallisto_index   = getGenomeAttribute('kallisto')
 
 /*
@@ -67,7 +66,6 @@ workflow NFCORE_RNASEQ {
         params.ribo_database_manifest,
         params.star_index,
         params.rsem_index,
-        params.salmon_index,
         params.kallisto_index,
         params.hisat2_index,
         params.bbsplit_index,
@@ -110,7 +108,6 @@ workflow NFCORE_RNASEQ {
         PREPARE_GENOME.out.star_index,
         PREPARE_GENOME.out.rsem_index,
         PREPARE_GENOME.out.hisat2_index,
-        PREPARE_GENOME.out.salmon_index,
         PREPARE_GENOME.out.kallisto_index,
         PREPARE_GENOME.out.bbsplit_index,
         PREPARE_GENOME.out.rrna_fastas,
