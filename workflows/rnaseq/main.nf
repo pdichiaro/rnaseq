@@ -5,7 +5,6 @@
 */
 
 //
-// MODULE: Loaded from modules/local/
 //
 
 include { NORMALIZE_DESEQ2_QC_INVARIANT_GENES } from '../../modules/local/normalize_deseq2_qc_invariant_genes'
@@ -34,7 +33,6 @@ include { DEEPTOOLS_BIGWIG_NORM as DEEPTOOLS_BIGWIG_NORM_INVARIANT } from '../..
 include { DEEPTOOLS_BIGWIG_NORM as DEEPTOOLS_BIGWIG_NORM_ALL_GENES } from '../../modules/local/deeptools_bw_norm'
 
 //
-// SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
 include { ALIGN_STAR                            } from '../../subworkflows/local/align_star'
 include { QUANTIFY_RSEM                         } from '../../subworkflows/local/quantify_rsem'
@@ -55,7 +53,6 @@ include { mapBamToPublishedPath          } from '../../subworkflows/local/utils_
 */
 
 //
-// MODULE: Installed directly from nf-core/modules
 //
 include { DUPRADAR                   } from '../../modules/nf-core/dupradar'
 include { PRESEQ_LCEXTRAP            } from '../../modules/nf-core/preseq/lcextrap'
@@ -70,7 +67,6 @@ include { BEDTOOLS_GENOMECOV as BEDTOOLS_GENOMECOV_REV         } from '../../mod
 include { SAMTOOLS_INDEX                                       } from '../../modules/nf-core/samtools/index'
 
 //
-// SUBWORKFLOW: Consisting entirely of nf-core/modules
 //
 include { paramsSummaryMap                 } from 'plugin/nf-schema'
 include { samplesheetToList                } from 'plugin/nf-schema'
@@ -91,7 +87,6 @@ include { FASTQ_QC_TRIM_FILTER_SETSTRANDEDNESS              } from '../../subwor
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// Header files for MultiQC
 sample_status_header_multiqc    = file("$projectDir/workflows/rnaseq/assets/multiqc/sample_status_header.txt", checkIfExists: true)
 ch_biotypes_header_multiqc      = file("$projectDir/workflows/rnaseq/assets/multiqc/biotypes_header.txt", checkIfExists: true)
 ch_deseq2_pca_header            = file("$projectDir/workflows/rnaseq/assets/multiqc/deseq2_pca_header.txt", checkIfExists: true)
@@ -125,14 +120,12 @@ workflow RNASEQ {
     main:
 
     //
-    // Parameter validation
     //
     def valid_aligners = ['star', 'hisat2']
     def valid_pseudo_aligners = ['salmon', 'kallisto']
     def valid_quantifications = ['genome', 'rsem', 'salmon']
     def valid_normalization_methods = ['all_genes', 'invariant_genes', 'all_genes, invariant_genes']
     
-    // Allow running without aligner or pseudo_aligner if the other is specified
     if (params.aligner && !valid_aligners.contains(params.aligner)) {
         error "Invalid aligner '${params.aligner}'. Valid options: ${valid_aligners.join(', ')}"
     }
@@ -141,24 +134,20 @@ workflow RNASEQ {
         error "Invalid pseudo_aligner '${params.pseudo_aligner}'. Valid options: ${valid_pseudo_aligners.join(', ')}"
     }
     
-    // Parse and validate quantification methods (supports comma-separated list)
     def quantification_methods = []
     if (params.quantification) {
         quantification_methods = params.quantification instanceof List ? 
             params.quantification : params.quantification.split(',').collect{it.trim()}
         
-        // Validate each quantification method
         def invalid_methods = quantification_methods.findAll { !valid_quantifications.contains(it) }
         if (invalid_methods.size() > 0) {
             error "Invalid quantification method(s): ${invalid_methods.join(', ')}. Valid options: ${valid_quantifications.join(', ')}"
         }
         
-        // Remove duplicates
         quantification_methods = quantification_methods.unique()
         
         log.info "Selected quantification methods: ${quantification_methods.join(', ')}"
     } else {
-        // Default to genome quantification if no quantification methods specified but aligner is present
         if (params.aligner && !params.skip_quantification_method) {
             quantification_methods = ['genome']
             log.info "No quantification methods specified, defaulting to: ${quantification_methods.join(', ')}"
@@ -169,7 +158,6 @@ workflow RNASEQ {
         error "Invalid normalization_method '${params.normalization_method}'. Valid options: ${valid_normalization_methods.join(', ')}"
     }
     
-    // Validate workflow combinations
     if (params.aligner == 'hisat2' && quantification_methods.size() > 0) {
         def incompatible_methods = quantification_methods.findAll { it != 'genome' }
         if (incompatible_methods.size() > 0) {
@@ -177,7 +165,6 @@ workflow RNASEQ {
         }
     }
     
-    // Allow both aligner and pseudo_aligner to run simultaneously
     if (!params.pseudo_aligner && !params.aligner) {
         error "Must specify at least one of: aligner (star/hisat2) or pseudo_aligner (salmon/kallisto)."
     }
@@ -191,7 +178,6 @@ workflow RNASEQ {
     ch_scaling_factors_individual = Channel.empty()
 
     //
-    // Create channel from input file provided through params.input
     //
     Channel
         .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
@@ -216,19 +202,16 @@ workflow RNASEQ {
         }
         .set { ch_input_branched }
 
-    // Get inputs for FASTQ and BAM processing paths
 
     ch_fastq = ch_input_branched.fastq
     ch_genome_bam = ch_input_branched.bam.map { meta, genome_bam, transcriptome_bam -> [ meta, genome_bam ] }.distinct()
     ch_transcriptome_bam = ch_input_branched.bam.map { meta, genome_bam, transcriptome_bam -> [ meta, transcriptome_bam ] }.distinct()
 
-    // Derive mapping percentages if supplied with input
 
     ch_percent_mapped = ch_input_branched.bam
         .filter{ meta, genome_bam, transcriptome_bam -> meta.percent_mapped }
         .map { meta, genome_bam, transcriptome_bam -> [ meta, meta.percent_mapped ] }
 
-    // Index pre-aligned input BAM files
     SAMTOOLS_INDEX (
         ch_genome_bam
     )
@@ -236,11 +219,8 @@ workflow RNASEQ {
     ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions.first())
 
     //
-    // Run RNA-seq FASTQ preprocessing subworkflow
     //
 
-    // The subworkflow only has to do Salmon indexing if it discovers 'auto'
-    // samples, and if we haven't already made one elsewhere
     salmon_index_available = params.salmon_index || (!params.skip_pseudo_alignment && params.pseudo_aligner == 'salmon')
 
     FASTQ_QC_TRIM_FILTER_SETSTRANDEDNESS (
@@ -282,13 +262,11 @@ workflow RNASEQ {
         }
 
     //
-    // WORKFLOW PATH 1: STAR ALIGNMENT
     //
     ch_star_log            = Channel.empty()
     ch_unaligned_sequences = Channel.empty()
 
     if (!params.skip_alignment && params.aligner == 'star') {
-        // Check if an AWS iGenome has been provided to use the appropriate version of STAR
         def is_aws_igenome = false
         if (params.fasta && params.gtf) {
             if ((file(params.fasta).getName() - '.gz' == 'genome.fa') && (file(params.gtf).getName() - '.gz' == 'genes.gtf')) {
@@ -320,7 +298,6 @@ workflow RNASEQ {
         ch_versions = ch_versions.mix(ALIGN_STAR.out.versions)
 
         //
-        // SUBWORKFLOW: Remove duplicate reads from BAM file based on UMIs
         //
         if (params.with_umi) {
 
@@ -343,8 +320,6 @@ workflow RNASEQ {
                 .mix(BAM_DEDUP_UMI_STAR.out.multiqc_files)
 
         } else {
-            // The deduplicated stats should take priority for MultiQC, but use
-            // them straight out of the aligner otherwise
 
             ch_multiqc_files = ch_multiqc_files
                 .mix(ALIGN_STAR.out.stats.collect{it[1]})
@@ -354,13 +329,12 @@ workflow RNASEQ {
     }
 
     //
-    // QUANTIFICATION AFTER STAR ALIGNMENT
     //
     if (params.aligner == 'star' && !params.skip_quantification_method && quantification_methods.size() > 0) {
         
         if (quantification_methods.contains('rsem')) {
             //
-            // STAR --> RSEM --> NORMALIZATION
+
             //
             QUANTIFY_RSEM (
                 ch_transcriptome_bam,
@@ -372,16 +346,16 @@ workflow RNASEQ {
             ch_versions = ch_versions.mix(QUANTIFY_RSEM.out.versions)
 
             if (!params.skip_qc & !params.skip_deseq2_qc) {
-                // Convert normalization_method to list for flexible processing
+                
                 def normalization_methods = params.normalization_method instanceof List ? 
                     params.normalization_method : params.normalization_method.split(',').collect{it.trim()}
                 
-                // Initialize empty channels for conditional outputs
+                
                 ch_normalization_versions = Channel.empty()
                 ch_normalization_scaling_factors = Channel.empty()
                 ch_deseq2_raw_files = Channel.empty()
                 
-                // Run invariant_genes normalization if requested
+                
                 if (normalization_methods.contains('invariant_genes')) {
                     NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT (
                         QUANTIFY_RSEM.out.merged_counts_gene,
@@ -399,7 +373,7 @@ workflow RNASEQ {
                     ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors_individual)
                 }
                 
-                // Run all_genes normalization if requested or as default
+                
                 if (normalization_methods.contains('all_genes') || (!normalization_methods.contains('invariant_genes') && !normalization_methods.contains('all_genes'))) {
                     NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT (
                         QUANTIFY_RSEM.out.merged_counts_gene,
@@ -417,14 +391,14 @@ workflow RNASEQ {
                     ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors_individual)
                 }
                 
-                // Create section header for DESeq2 QC in MultiQC report
+                
                 DESEQ2_SECTION_HEADER (
                     "star_rsem"
                 )
                 ch_multiqc_files = ch_multiqc_files.mix(DESEQ2_SECTION_HEADER.out.section_header)
                 ch_versions = ch_versions.mix(DESEQ2_SECTION_HEADER.out.versions)
                 
-                // Transform DESeq2 plot files with headers for MultiQC custom content
+                
                 DESEQ2_TRANSFORM (
                     ch_deseq2_raw_files.flatten(),
                     ch_deseq2_pca_header,
@@ -434,7 +408,7 @@ workflow RNASEQ {
                 ch_multiqc_files = ch_multiqc_files.mix(DESEQ2_TRANSFORM.out.multiqc_files)
                 ch_versions = ch_versions.mix(DESEQ2_TRANSFORM.out.versions.first())
                 
-                // Mix the normalization results into main channels
+                
                 ch_versions = ch_versions.mix(ch_normalization_versions)
                 ch_scaling_factors = ch_scaling_factors.mix(ch_normalization_scaling_factors)
             }
@@ -443,7 +417,7 @@ workflow RNASEQ {
         
         if (quantification_methods.contains('salmon')) {
             //
-            // STAR --> SALMON --> NORMALIZATION
+
             //
             QUANTIFY_STAR_SALMON (
                 ch_samplesheet.map { [ [:], it ] },
@@ -464,23 +438,23 @@ workflow RNASEQ {
             ch_versions = ch_versions.mix(QUANTIFY_STAR_SALMON.out.versions)
 
             if (!params.skip_qc & !params.skip_deseq2_qc) {
-                // Convert normalization_method to list for flexible processing
+                
                 def normalization_methods = params.normalization_method instanceof List ? 
                     params.normalization_method : params.normalization_method.split(',').collect{it.trim()}
                 
-                // Initialize empty channels for conditional outputs
+                
                 ch_normalization_versions_salmon = Channel.empty()
                 ch_normalization_scaling_factors_salmon = Channel.empty()
                 ch_deseq2_raw_files_salmon = Channel.empty()
                 
-                // Run invariant_genes normalization if requested
+                
                 if (normalization_methods.contains('invariant_genes')) {
                     NORMALIZE_DESEQ2_QC_INVARIANT_GENES (
                         QUANTIFY_STAR_SALMON.out.counts_gene,
                         "STAR_Salmon"
                     )
                     
-                    // Collect DESeq2 plot files for transformation (ordered for MultiQC display)
+                    
                     ch_deseq2_raw_files_salmon = ch_deseq2_raw_files_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.read_dist_norm_txt)
                     ch_deseq2_raw_files_salmon = ch_deseq2_raw_files_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.sample_distances_txt)
                     ch_deseq2_raw_files_salmon = ch_deseq2_raw_files_salmon.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.pca_all_genes_txt)
@@ -492,14 +466,14 @@ workflow RNASEQ {
                     ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES.out.scaling_factors_individual)
                 }
                 
-                // Run all_genes normalization if requested or as default
+                
                 if (normalization_methods.contains('all_genes') || (!normalization_methods.contains('invariant_genes') && !normalization_methods.contains('all_genes'))) {
                     NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT (
                         QUANTIFY_STAR_SALMON.out.counts_gene,
                         "STAR_Salmon"
                     )
                     
-                    // Collect DESeq2 plot files for transformation (ordered for MultiQC display)
+                    
                     ch_deseq2_raw_files_salmon = ch_deseq2_raw_files_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.read_dist_norm_txt)
                     ch_deseq2_raw_files_salmon = ch_deseq2_raw_files_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.sample_distances_txt)
                     ch_deseq2_raw_files_salmon = ch_deseq2_raw_files_salmon.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_all_genes_txt)
@@ -511,14 +485,14 @@ workflow RNASEQ {
                     ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors_individual)
                 }
                 
-                // Create section header for DESeq2 QC in MultiQC report
+                
                 DESEQ2_SECTION_HEADER_STAR_SALMON (
                     "star_salmon"
                 )
                 ch_multiqc_files = ch_multiqc_files.mix(DESEQ2_SECTION_HEADER_STAR_SALMON.out.section_header)
                 ch_versions = ch_versions.mix(DESEQ2_SECTION_HEADER_STAR_SALMON.out.versions)
                 
-                // Transform DESeq2 plot files with headers for MultiQC custom content
+                
                 DESEQ2_TRANSFORM_STAR_SALMON (
                     ch_deseq2_raw_files_salmon.flatten(),
                     ch_deseq2_pca_header,
@@ -528,7 +502,7 @@ workflow RNASEQ {
                 ch_multiqc_files = ch_multiqc_files.mix(DESEQ2_TRANSFORM_STAR_SALMON.out.multiqc_files)
                 ch_versions = ch_versions.mix(DESEQ2_TRANSFORM_STAR_SALMON.out.versions.first())
                 
-                // Mix the normalization results into main channels
+                
                 ch_versions = ch_versions.mix(ch_normalization_versions_salmon)
                 ch_scaling_factors = ch_scaling_factors.mix(ch_normalization_scaling_factors_salmon)            }
 
@@ -536,7 +510,7 @@ workflow RNASEQ {
         
         if (quantification_methods.contains('genome')) {
             //
-            // STAR --> GENOME QUANTIFICATION --> MERGE --> NORMALIZATION
+
             //
             GENOME_COUNT (
                 ch_genome_bam.join(ch_genome_bam_index, by: [0]),
@@ -544,7 +518,6 @@ workflow RNASEQ {
             )
             ch_versions = ch_versions.mix(GENOME_COUNT.out.versions)
 
-            // Merge genome-based counts from all samples
             MERGE_GENOME_COUNTS (
                 GENOME_COUNT.out.combined_counts.map { meta, counts -> counts }.collect(),
                 "transcript,intron,exon,5utr,3utr",
@@ -553,23 +526,23 @@ workflow RNASEQ {
             ch_versions = ch_versions.mix(MERGE_GENOME_COUNTS.out.versions)
 
             if (!params.skip_qc & !params.skip_deseq2_qc) {
-                // Convert normalization_method to list for flexible processing
+                
                 def normalization_methods = params.normalization_method instanceof List ? 
                     params.normalization_method : params.normalization_method.split(',').collect{it.trim()}
                 
-                // Initialize empty channels for conditional outputs
+                
                 ch_normalization_versions_genome = Channel.empty()
                 ch_normalization_scaling_factors_genome = Channel.empty()
                 ch_deseq2_raw_files_genome = Channel.empty()
                 
-                // Run invariant_genes normalization if requested
+                
                 if (normalization_methods.contains('invariant_genes')) {
                     NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT (
                         MERGE_GENOME_COUNTS.out.merged_counts.flatten().filter { it.name.contains('genome_exon_counts_merged.txt') }.first(),
                         "STAR_Genome"
                     )
                     
-                    // Collect DESeq2 plot files for transformation (ordered for MultiQC display)
+                    
                     ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.read_dist_norm_txt)
                     ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.sample_distances_txt)
                     ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_all_genes_txt)
@@ -581,14 +554,14 @@ workflow RNASEQ {
                     ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors_individual)
                 }
                 
-                // Run all_genes normalization if requested or as default
+                
                 if (normalization_methods.contains('all_genes') || (!normalization_methods.contains('invariant_genes') && !normalization_methods.contains('all_genes'))) {
                     NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT (
                         MERGE_GENOME_COUNTS.out.merged_counts.flatten().filter { it.name.contains('genome_exon_counts_merged.txt') }.first(),
                         "STAR_Genome"
                     )
                     
-                    // Collect DESeq2 plot files for transformation (ordered for MultiQC display)
+                    
                     ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.read_dist_norm_txt)
                     ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.sample_distances_txt)
                     ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_all_genes_txt)
@@ -600,14 +573,14 @@ workflow RNASEQ {
                     ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors_individual)
                 }
                 
-                // Create section header for DESeq2 QC in MultiQC report
+                
                 DESEQ2_SECTION_HEADER_STAR_GENOME (
                     "star_genome"
                 )
                 ch_multiqc_files = ch_multiqc_files.mix(DESEQ2_SECTION_HEADER_STAR_GENOME.out.section_header)
                 ch_versions = ch_versions.mix(DESEQ2_SECTION_HEADER_STAR_GENOME.out.versions)
                 
-                // Transform DESeq2 plot files with headers for MultiQC custom content
+                
                 DESEQ2_TRANSFORM_STAR_GENOME (
                     ch_deseq2_raw_files_genome.flatten(),
                     ch_deseq2_pca_header,
@@ -616,7 +589,7 @@ workflow RNASEQ {
                 )
                 ch_multiqc_files = ch_multiqc_files.mix(DESEQ2_TRANSFORM_STAR_GENOME.out.multiqc_files)
                 
-                // Mix the normalization results into main channels
+                
                 ch_versions = ch_versions.mix(ch_normalization_versions_genome)
                 ch_versions = ch_versions.mix(DESEQ2_TRANSFORM_STAR_GENOME.out.versions.first())
                 ch_scaling_factors = ch_scaling_factors.mix(ch_normalization_scaling_factors_genome)            }
@@ -624,7 +597,6 @@ workflow RNASEQ {
     }
 
     //
-    // WORKFLOW PATH 2: HISAT2 ALIGNMENT
     //
     if (!params.skip_alignment && params.aligner == 'hisat2') {
         FASTQ_ALIGN_HISAT2 (
@@ -642,7 +614,6 @@ workflow RNASEQ {
         ch_versions = ch_versions.mix(FASTQ_ALIGN_HISAT2.out.versions)
 
         //
-        // SUBWORKFLOW: Remove duplicate reads from BAM file based on UMIs
         //
 
         if (params.with_umi) {
@@ -665,8 +636,6 @@ workflow RNASEQ {
                 .mix(BAM_DEDUP_UMI_HISAT2.out.multiqc_files)
         } else {
 
-            // The deduplicated stats should take priority for MultiQC, but use
-            // them straight out of the aligner otherwise
             ch_multiqc_files = ch_multiqc_files
                 .mix(FASTQ_ALIGN_HISAT2.out.stats.collect{it[1]})
                 .mix(FASTQ_ALIGN_HISAT2.out.flagstat.collect{it[1]})
@@ -674,8 +643,6 @@ workflow RNASEQ {
         }
 
         //
-        // HISAT2 --> GENOME QUANTIFICATION --> MERGE --> NORMALIZATION
-        // Note: HISAT2 only supports genome quantification
         //
         if (quantification_methods.contains('genome') && !params.skip_quantification_method) {
             GENOME_COUNT (
@@ -684,7 +651,6 @@ workflow RNASEQ {
             )
             ch_versions = ch_versions.mix(GENOME_COUNT.out.versions)
 
-            // Merge genome-based counts from all samples
             MERGE_GENOME_COUNTS_HISAT2 (
                 GENOME_COUNT.out.combined_counts.map { meta, counts -> counts }.collect(),
                 "transcript,intron,exon,5utr,3utr",
@@ -693,23 +659,23 @@ workflow RNASEQ {
             ch_versions = ch_versions.mix(MERGE_GENOME_COUNTS_HISAT2.out.versions)
 
             if (!params.skip_qc & !params.skip_deseq2_qc) {
-                // Convert normalization_method to list for flexible processing
+                
                 def normalization_methods = params.normalization_method instanceof List ? 
                     params.normalization_method : params.normalization_method.split(',').collect{it.trim()}
                 
-                // Initialize empty channels for conditional outputs
+                
                 ch_normalization_versions_hisat2 = Channel.empty()
                 ch_normalization_scaling_factors_hisat2 = Channel.empty()
                 ch_deseq2_raw_files_hisat2 = Channel.empty()
                 
-                // Run invariant_genes normalization if requested
+                
                 if (normalization_methods.contains('invariant_genes')) {
                     NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT (
                         MERGE_GENOME_COUNTS_HISAT2.out.merged_counts.flatten().filter { it.name.contains('genome_exon_counts_merged.txt') }.first(),
                         "HISAT2_Genome"
                     )
                     
-                    // Collect DESeq2 plot files for transformation (ordered for MultiQC display)
+                    
                     ch_deseq2_raw_files_hisat2 = ch_deseq2_raw_files_hisat2.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.read_dist_norm_txt)
                     ch_deseq2_raw_files_hisat2 = ch_deseq2_raw_files_hisat2.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.sample_distances_txt)
                     ch_deseq2_raw_files_hisat2 = ch_deseq2_raw_files_hisat2.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_all_genes_txt)
@@ -721,14 +687,14 @@ workflow RNASEQ {
                     ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors_individual)
                 }
                 
-                // Run all_genes normalization if requested or as default
+                
                 if (normalization_methods.contains('all_genes') || (!normalization_methods.contains('invariant_genes') && !normalization_methods.contains('all_genes'))) {
                     NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT (
                         MERGE_GENOME_COUNTS_HISAT2.out.merged_counts.flatten().filter { it.name.contains('genome_exon_counts_merged.txt') }.first(),
                         "HISAT2_Genome"
                     )
                     
-                    // Collect DESeq2 plot files for transformation (ordered for MultiQC display)
+                    
                     ch_deseq2_raw_files_hisat2 = ch_deseq2_raw_files_hisat2.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.read_dist_norm_txt)
                     ch_deseq2_raw_files_hisat2 = ch_deseq2_raw_files_hisat2.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.sample_distances_txt)
                     ch_deseq2_raw_files_hisat2 = ch_deseq2_raw_files_hisat2.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_all_genes_txt)
@@ -740,14 +706,14 @@ workflow RNASEQ {
                     ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors_individual)
                 }
                 
-                // Create section header for DESeq2 QC in MultiQC report
+                
                 DESEQ2_SECTION_HEADER_HISAT2 (
                     "hisat2_genome"
                 )
                 ch_multiqc_files = ch_multiqc_files.mix(DESEQ2_SECTION_HEADER_HISAT2.out.section_header)
                 ch_versions = ch_versions.mix(DESEQ2_SECTION_HEADER_HISAT2.out.versions)
                 
-                // Transform DESeq2 plot files with headers for MultiQC custom content
+                
                 DESEQ2_TRANSFORM_HISAT2 (
                     ch_deseq2_raw_files_hisat2.flatten(),
                     ch_deseq2_pca_header,
@@ -757,13 +723,12 @@ workflow RNASEQ {
                 ch_multiqc_files = ch_multiqc_files.mix(DESEQ2_TRANSFORM_HISAT2.out.multiqc_files)
                 ch_versions = ch_versions.mix(DESEQ2_TRANSFORM_HISAT2.out.versions.first())
                 
-                // Mix the normalization results into main channels
+                
                 ch_versions = ch_versions.mix(ch_normalization_versions_hisat2)
                 ch_scaling_factors = ch_scaling_factors.mix(ch_normalization_scaling_factors_hisat2)            }
         }
     }
 
-    // Filter bam and index by percent mapped being present in the meta
 
     ch_genome_bam_bai_mapping = ch_genome_bam
         .join(ch_genome_bam_index)
@@ -783,12 +748,10 @@ workflow RNASEQ {
 
     ch_percent_mapped = ch_genome_bam_bai_mapping.percent_mapped
 
-    // Save mapping status for workflow summary where present
 
     ch_map_status = ch_genome_bam_bai_mapping.status
         .filter { id, pass -> pass != null }
 
-    // Save status for MultiQC report
     ch_fail_mapping_multiqc = ch_genome_bam_bai_mapping.percent_mapped_pass
         .filter { id, percent_mapped, pass -> pass != null && !pass }
         .map { id, percent_mapped, pass -> [ "${id}\t${percent_mapped}" ] }
@@ -802,7 +765,6 @@ workflow RNASEQ {
 
     ch_multiqc_files = ch_multiqc_files.mix(ch_fail_mapping_multiqc)
 
-    // Where a percent mapping is present, use it to filter bam and index
 
     map_filtered_genome_bam_bai = ch_genome_bam_bai_mapping.bam
         .filter { meta, bam, index, pass -> pass || pass == null }
@@ -815,11 +777,9 @@ workflow RNASEQ {
     ch_genome_bam_index = map_filtered_genome_bam_bai.index
 
     //
-    // NOTE: Genome counting is now integrated into quantification genome sections above
     //
 
     //
-    // MODULE: Run Preseq
     //
     if (!params.skip_qc && !params.skip_preseq) {
         PRESEQ_LCEXTRAP (
@@ -830,7 +790,6 @@ workflow RNASEQ {
     }
 
     //
-    // SUBWORKFLOW: Mark duplicate reads
     //
     if (!params.skip_markduplicates && !params.with_umi) {
         BAM_MARKDUPLICATES_PICARD (
@@ -849,7 +808,6 @@ workflow RNASEQ {
     }
 
     //
-    // MODULE: STRINGTIE
     //
     if (!params.skip_stringtie) {
         STRINGTIE_STRINGTIE (
@@ -860,7 +818,6 @@ workflow RNASEQ {
     }
 
     //
-    // MODULE: Feature biotype QC using featureCounts
     //
     def biotype = params.gencode ? "gene_type" : params.featurecounts_group_type
     if (!params.skip_qc && !params.skip_biotype_qc && biotype) {
@@ -869,7 +826,6 @@ workflow RNASEQ {
             .map { biotypeInGtf(it, biotype) }
             .set { biotype_in_gtf }
 
-        // Prevent any samples from running if GTF file doesn't have a valid biotype
         ch_genome_bam
             .combine(ch_gtf)
             .combine(biotype_in_gtf)
@@ -891,7 +847,6 @@ workflow RNASEQ {
     }
 
     //
-    // MODULE: Genome-wide coverage with BEDTools
     //
     if (!params.skip_bigwig) {
 
@@ -913,7 +868,6 @@ workflow RNASEQ {
         ch_versions = ch_versions.mix(BEDTOOLS_GENOMECOV_FW.out.versions.first())
 
         //
-        // SUBWORKFLOW: Convert bedGraph to bigWig
         //
         BEDGRAPH_BEDCLIP_BEDGRAPHTOBIGWIG_FORWARD (
             BEDTOOLS_GENOMECOV_FW.out.genomecov,
@@ -928,10 +882,8 @@ workflow RNASEQ {
 
     }
 
-    // MOVED: Deeptools normalization moved to after all workflow branches complete
 
     //
-    // MODULE: Downstream QC steps
     //
     if (!params.skip_qc) {
         if (!params.skip_qualimap) {
@@ -952,7 +904,6 @@ workflow RNASEQ {
             ch_versions = ch_versions.mix(DUPRADAR.out.versions.first())
         }
 
-        // Get RSeqC modules to run
         def rseqc_modules = params.rseqc_modules ? params.rseqc_modules.split(',').collect{ it.trim().toLowerCase() } : []
         if (params.bam_csi_index) {
             for (rseqc_module in ['read_distribution', 'inner_distance', 'tin']) {
@@ -977,7 +928,6 @@ workflow RNASEQ {
             ch_multiqc_files = ch_multiqc_files.mix(BAM_RSEQC.out.tin_txt.collect{it[1]})
             ch_versions = ch_versions.mix(BAM_RSEQC.out.versions)
 
-            // Compare predicted supplied or Salmon-predicted strand with what we get from RSeQC
             ch_strand_comparison = BAM_RSEQC.out.inferexperiment_txt
                 .map {
                     meta, strand_log ->
@@ -1011,10 +961,8 @@ workflow RNASEQ {
                         multiqc_lines: multiqc_lines
                 }
 
-            // Store the statuses for output
             ch_strand_status = ch_strand_comparison.status
 
-            // Take the lines formatted for MultiQC and output
             ch_strand_comparison.multiqc_lines
                 .flatten()
                 .collect()
@@ -1061,7 +1009,6 @@ workflow RNASEQ {
     }
 
     //
-    // WORKFLOW PATH 3: PSEUDO-ALIGNMENT (SALMON OR KALLISTO)
     //
     if (!params.skip_pseudo_alignment && params.pseudo_aligner) {
 
@@ -1091,39 +1038,34 @@ workflow RNASEQ {
         ch_multiqc_files = ch_multiqc_files.mix(QUANTIFY_PSEUDO_ALIGNMENT.out.multiqc.collect{it[1]})
         ch_versions = ch_versions.mix(QUANTIFY_PSEUDO_ALIGNMENT.out.versions)
         
-        // Add Kallisto pseudoBAM files to genome BAM channel for BigWig generation
         if (params.pseudo_aligner == 'kallisto') {
             ch_genome_bam = ch_genome_bam.mix(QUANTIFY_PSEUDO_ALIGNMENT.out.bam)
             
-            // Use Kallisto-generated BAI files directly (no need for separate indexing)
             ch_genome_bam_index = ch_genome_bam_index.mix(QUANTIFY_PSEUDO_ALIGNMENT.out.bai)
         }
 
         //
-        // SALMON/KALLISTO --> NORMALIZATION
         //
         if (!params.skip_qc & !params.skip_deseq2_qc) {
-            // Convert normalization_method to list for flexible processing
+            
             def normalization_methods = params.normalization_method instanceof List ? 
                 params.normalization_method : params.normalization_method.split(',').collect{it.trim()}
             
-            // Initialize empty channels for conditional outputs
+            
             ch_normalization_versions_pseudo = Channel.empty()
             ch_normalization_scaling_factors_pseudo = Channel.empty()
             ch_deseq2_raw_files_pseudo = Channel.empty()
             
-            // Determine the quantifier for file naming (must match what was actually used for quantification)
-            // This is critical for MultiQC to find the correct files
             def pseudo_quantifier = params.pseudo_aligner ? params.pseudo_aligner.capitalize() : "Salmon"
             
-            // Run invariant_genes normalization if requested
+            
             if (normalization_methods.contains('invariant_genes')) {
                 NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO (
                     ch_counts_gene,
                     pseudo_quantifier
                 )
 
-                // Collect DESeq2 plot files for transformation (ordered for MultiQC display)
+                
                 ch_deseq2_raw_files_pseudo = ch_deseq2_raw_files_pseudo.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.read_dist_norm_txt)
                 ch_deseq2_raw_files_pseudo = ch_deseq2_raw_files_pseudo.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.sample_distances_txt)
                 ch_deseq2_raw_files_pseudo = ch_deseq2_raw_files_pseudo.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.pca_all_genes_txt)
@@ -1135,14 +1077,14 @@ workflow RNASEQ {
                 ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.scaling_factors_individual)
             }
             
-            // Run all_genes normalization if requested or as default
+            
             if (normalization_methods.contains('all_genes') || (!normalization_methods.contains('invariant_genes') && !normalization_methods.contains('all_genes'))) {
                 NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO (
                     ch_counts_gene,
                     pseudo_quantifier
                 )
 
-                // Collect DESeq2 plot files for transformation (ordered for MultiQC display)
+                
                 ch_deseq2_raw_files_pseudo = ch_deseq2_raw_files_pseudo.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.read_dist_norm_txt)
                 ch_deseq2_raw_files_pseudo = ch_deseq2_raw_files_pseudo.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.sample_distances_txt)
                 ch_deseq2_raw_files_pseudo = ch_deseq2_raw_files_pseudo.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.pca_all_genes_txt)
@@ -1154,14 +1096,14 @@ workflow RNASEQ {
                 ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.scaling_factors_individual)
             }
             
-            // Create section header for DESeq2 QC in MultiQC report
+            
             DESEQ2_SECTION_HEADER_PSEUDO (
                 params.pseudo_aligner
             )
             ch_multiqc_files = ch_multiqc_files.mix(DESEQ2_SECTION_HEADER_PSEUDO.out.section_header)
             ch_versions = ch_versions.mix(DESEQ2_SECTION_HEADER_PSEUDO.out.versions)
             
-            // Transform DESeq2 plot files with headers for MultiQC custom content
+            
             DESEQ2_TRANSFORM_PSEUDO (
                 ch_deseq2_raw_files_pseudo.flatten(),
                 ch_deseq2_pca_header,
@@ -1170,43 +1112,33 @@ workflow RNASEQ {
             )
             ch_multiqc_files = ch_multiqc_files.mix(DESEQ2_TRANSFORM_PSEUDO.out.multiqc_files)
             
-            // Mix the normalization scaling factors and versions into main channels
             ch_versions = ch_versions.mix(DESEQ2_TRANSFORM_PSEUDO.out.versions.first())
             ch_versions = ch_versions.mix(ch_normalization_versions_pseudo)
             ch_scaling_factors = ch_scaling_factors.mix(ch_normalization_scaling_factors_pseudo)        }
     }
 
     //
-    // MODULE: Normalize bigwig files with deeptools
     //
     if (!params.skip_deeptools_norm && !params.skip_qc && !params.skip_deseq2_qc) {
-        // Convert normalization_method to list for processing
         def normalization_methods = params.normalization_method instanceof List ? 
             params.normalization_method : params.normalization_method.split(',').collect{it.trim()}
         
-        // Run DeepTools normalization for invariant_genes method if requested
         if (normalization_methods.contains('invariant_genes')) {
-            // Create combined input channel that only proceeds when both BAM files and scaling factors are available
             ch_bam_for_deeptools_invariant = ch_genome_bam
                 .join(ch_genome_bam_index, by: [0])
             
-            // Get individual scaling factor files from the invariant genes normalization
-            // Each file is named: {sample_name}_scaling_factor.txt and contains just the numeric value
             ch_scaling_per_sample_invariant = ch_scaling_factors_individual
                 .flatten()
                 .filter { file ->
-                    // Filter for invariant-specific files if method contains "invariant"
                     def parent_dir = file.getParent()?.getName() ?: ""
                     def grandparent_dir = file.getParent()?.getParent()?.getName() ?: ""
                     parent_dir.contains('invariant') || grandparent_dir.contains('invariant')
                 }
                 .map { file ->
-                    // Extract sample name from filename: {sample_name}_scaling_factor.txt
                     def sample_name = file.name.replaceAll('_scaling_factor\\.txt$', '')
                     [sample_name, file]
                 }
             
-            // Join BAM files with their specific scaling factor files by sample ID
             ch_combined_input_invariant = ch_bam_for_deeptools_invariant
                 .map { meta, bam, bai -> [meta.id, meta, bam, bai] }  // Add sample ID as key
                 .join(ch_scaling_per_sample_invariant, by: 0)         // Join on sample ID
@@ -1220,30 +1152,22 @@ workflow RNASEQ {
             ch_versions = ch_versions.mix(DEEPTOOLS_BIGWIG_NORM_INVARIANT.out.versions)
         }
         
-        // Run DeepTools normalization for all_genes method if requested or as default
         if (normalization_methods.contains('all_genes') || (!normalization_methods.contains('invariant_genes') && !normalization_methods.contains('all_genes'))) {
-            // Create combined input channel that only proceeds when both BAM files and scaling factors are available
             ch_bam_for_deeptools_all_genes = ch_genome_bam
                 .join(ch_genome_bam_index, by: [0])
             
-            // Get individual scaling factor files from the all genes normalization
-            // Each file is named: {sample_name}_scaling_factor.txt and contains just the numeric value
             ch_scaling_per_sample_all_genes = ch_scaling_factors_individual
                 .flatten()
                 .filter { file ->
-                    // Filter for all_genes-specific files (not invariant)
                     def parent_dir = file.getParent()?.getName() ?: ""
                     def grandparent_dir = file.getParent()?.getParent()?.getName() ?: ""
-                    // Include files that are NOT from invariant directories
                     !(parent_dir.contains('invariant') || grandparent_dir.contains('invariant'))
                 }
                 .map { file ->
-                    // Extract sample name from filename: {sample_name}_scaling_factor.txt
                     def sample_name = file.name.replaceAll('_scaling_factor\\.txt$', '')
                     [sample_name, file]
                 }
             
-            // Join BAM files with their specific scaling factor files by sample ID
             ch_combined_input_all_genes = ch_bam_for_deeptools_all_genes
                 .map { meta, bam, bai -> [meta.id, meta, bam, bai] }  // Add sample ID as key
                 .join(ch_scaling_per_sample_all_genes, by: 0)         // Join on sample ID
@@ -1259,32 +1183,27 @@ workflow RNASEQ {
     }
 
     //
-    // Collate and save software versions
     //
     softwareVersionsToYAML(ch_versions)
         .collectFile(storeDir: "${params.outdir}/pipeline_info", name: 'nf_core_rnaseq_software_mqc_versions.yml', sort: true, newLine: true)
         .set { ch_collated_versions }
 
     //
-    // MODULE: MultiQC
     //
     ch_multiqc_report = Channel.empty()
 
     if (!params.skip_multiqc) {
 
-        // Load MultiQC configuration files
         ch_multiqc_config        = Channel.fromPath("$projectDir/workflows/rnaseq/assets/multiqc/multiqc_config.yml", checkIfExists: true)
         ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multiqc_config) : Channel.empty()
         ch_multiqc_logo          = params.multiqc_logo   ? Channel.fromPath(params.multiqc_logo)   : Channel.empty()
 
-        // Prepare the workflow summary
         ch_workflow_summary = Channel.value(
             paramsSummaryMultiqc(
                 paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
             )
         ).collectFile(name: 'workflow_summary_mqc.yaml')
 
-        // Prepare the methods section
         ch_methods_description = Channel.value(
             methodsDescriptionText(
                 params.multiqc_methods_description
@@ -1293,15 +1212,11 @@ workflow RNASEQ {
             )
         ).collectFile(name: 'methods_description_mqc.yaml')
 
-        // Add summary, versions, and methods to the MultiQC input file list
         ch_multiqc_files = ch_multiqc_files
             .mix(ch_workflow_summary)
             .mix(ch_collated_versions)
             .mix(ch_methods_description)
 
-        // Provide MultiQC with rename patterns to ensure it uses sample names
-        // for single-techrep samples not processed by CAT_FASTQ, and trims out
-        // _raw or _trimmed
 
         ch_name_replacements = ch_fastq
             .map{ meta, reads ->
@@ -1332,19 +1247,16 @@ workflow RNASEQ {
     }
 
     //
-    // Generate samplesheet with BAM paths for future runs
     //
 
     ch_samplesheet_with_bams = Channel.empty()
     if (!params.skip_alignment && params.save_align_intermeds) {
-        // Create channel with original input info and BAM paths
         ch_fastq.map { meta, reads -> [ meta.id, meta, reads ] }
             .join(ch_unprocessed_bams.map { meta, genome_bam, transcriptome_bam -> [ meta.id, meta, genome_bam, transcriptome_bam ] })
             .join(ch_percent_mapped)
             .transpose()
             .map { id, fastq_meta, reads, meta, genome_bam, transcriptome_bam, percent_mapped ->
 
-                // Handle BAM paths (same for all runs of this sample)
                 def genome_bam_published = meta.has_genome_bam ?
                     (meta.original_genome_bam ?: '') :
                     mapBamToPublishedPath(genome_bam, meta.id, params.aligner, params.outdir)
