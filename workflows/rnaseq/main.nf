@@ -1136,15 +1136,16 @@ workflow RNASEQ {
                 }
                 .map { file ->
                     def sample_name = file.name.replaceAll('_scaling_factor\\.txt$', '')
-                    [sample_name, file]
+                    def scaling_value = file.text.trim()
+                    [sample_name, scaling_value]
                 }
             
             ch_combined_input_invariant = ch_bam_for_deeptools_invariant
-                .map { meta, bam, bai -> [meta.id, meta, bam, bai] }  // Add sample ID as key
-                .join(ch_scaling_per_sample_invariant, by: 0)         // Join on sample ID
-                .map { sample_id, meta, bam, bai, scaling_factor_file -> 
-                    [meta + [scaling_factor_file: scaling_factor_file], bam, bai] 
-                }  // Add scaling_factor_file to meta
+                .map { meta, bam, bai -> [meta.id, meta, bam, bai] }
+                .join(ch_scaling_per_sample_invariant, by: 0)
+                .map { sample_id, meta, bam, bai, scaling -> 
+                    [meta, bam, bai, scaling] 
+                }
             
             DEEPTOOLS_BIGWIG_NORM_INVARIANT (
                 ch_combined_input_invariant
@@ -1165,15 +1166,16 @@ workflow RNASEQ {
                 }
                 .map { file ->
                     def sample_name = file.name.replaceAll('_scaling_factor\\.txt$', '')
-                    [sample_name, file]
+                    def scaling_value = file.text.trim()
+                    [sample_name, scaling_value]
                 }
             
             ch_combined_input_all_genes = ch_bam_for_deeptools_all_genes
-                .map { meta, bam, bai -> [meta.id, meta, bam, bai] }  // Add sample ID as key
-                .join(ch_scaling_per_sample_all_genes, by: 0)         // Join on sample ID
-                .map { sample_id, meta, bam, bai, scaling_factor_file -> 
-                    [meta + [scaling_factor_file: scaling_factor_file], bam, bai] 
-                }  // Add scaling_factor_file to meta
+                .map { meta, bam, bai -> [meta.id, meta, bam, bai] }
+                .join(ch_scaling_per_sample_all_genes, by: 0)
+                .map { sample_id, meta, bam, bai, scaling -> 
+                    [meta, bam, bai, scaling] 
+                }
             
             DEEPTOOLS_BIGWIG_NORM_ALL_GENES (
                 ch_combined_input_all_genes

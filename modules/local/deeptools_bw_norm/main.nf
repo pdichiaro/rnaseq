@@ -6,7 +6,7 @@ process DEEPTOOLS_BIGWIG_NORM {
     container 'quay.io/biocontainers/mulled-v2-eb9e7907c7a753917c1e4d7a64384c047429618a:62d1ebe2d3a2a9d1a7ad31e0b902983fa7c25fa7-0'
 
     input:
-    tuple val(meta), path(bam), path(bai)
+    tuple val(meta), path(bam), path(bai), val(scaling)
 
     output:
     path "*.unstranded.norm.bw" , emit: unstranded_bw
@@ -27,24 +27,16 @@ process DEEPTOOLS_BIGWIG_NORM {
 
     if(strandedness == 'unstranded'){
         """
-        # Read scaling factor from individual per-sample file
-        scaling=\$(cat ${meta.scaling_factor_file})
-        if [ -z "\$scaling" ]; then
-            scaling=1.0
-        fi
-        
         echo "Sample: ${meta.id}"
         echo "Library strandedness: unstranded"
         echo "Data type: $pe"
-        echo "Scaling factor file: ${meta.scaling_factor_file}"
-        echo "Scaling factor: \$scaling"
+        echo "Scaling factor: $scaling"
         echo "Prefix: $prefix"
-        echo "Generating unstranded BigWig only (appropriate for unstranded libraries)"
         
         bamCoverage \\
                 --numberOfProcessors $task.cpus \\
                 --binSize 1 \\
-                --scaleFactor \$scaling \\
+                --scaleFactor $scaling \\
                 --bam $bam \\
                 -o ${prefix}.unstranded.norm.bw
 
@@ -57,46 +49,32 @@ process DEEPTOOLS_BIGWIG_NORM {
         if( pe == 'single' ){
             if(strandedness == 'forward'){
                 """
-                # Read scaling factor from individual per-sample file
-                scaling=\$(cat ${meta.scaling_factor_file})
-                if [ -z "\$scaling" ]; then
-                    scaling=1.0
-                fi
-                
                 echo "Sample: ${meta.id}"
                 echo "Library strandedness: forward"
                 echo "Data type: single-end"
-                echo "Scaling factor file: ${meta.scaling_factor_file}"
-                echo "Scaling factor: \$scaling"
+                echo "Scaling factor: $scaling"
                 echo "Prefix: $prefix"
-                echo "Generating all BigWig types (unstranded + strand-specific with forward library logic)"
                 
-                # 1. Unstranded BigWig (always generate)
-                echo "Generating unstranded BigWig..."
                 bamCoverage \\
                     --bam $bam \\
                     --numberOfProcessors $task.cpus \\
                     --binSize 1 \\
-                    --scaleFactor \$scaling \\
+                    --scaleFactor $scaling \\
                     -o ${prefix}.unstranded.norm.bw
 
-                # 2. Forward strand BigWig (forward library: normal logic)
-                echo "Generating forward strand BigWig (forward library, single-end)..."
                 bamCoverage \\
                     --bam $bam \\
                     --numberOfProcessors $task.cpus \\
                     --binSize 1 \\
-                    --scaleFactor \$scaling \\
+                    --scaleFactor $scaling \\
                     --samFlagExclude 16 \\
                     -o ${prefix}.fwd.norm.bw
 
-                # 3. Reverse strand BigWig (forward library: normal logic)
-                echo "Generating reverse strand BigWig (forward library, single-end)..."
                 bamCoverage \\
                     --bam $bam \\
                     --numberOfProcessors $task.cpus \\
                     --binSize 1 \\
-                    --scaleFactor \$scaling \\
+                    --scaleFactor $scaling \\
                     --samFlagInclude 16 \\
                     -o ${prefix}.rev.norm.bw
 
@@ -108,45 +86,36 @@ process DEEPTOOLS_BIGWIG_NORM {
             } else {
                 """
                 # Read scaling factor from individual per-sample file
-                scaling=\$(cat ${meta.scaling_factor_file})
-                if [ -z "\$scaling" ]; then
-                    scaling=1.0
-                fi
                 
                 echo "Sample: ${meta.id}"
                 echo "Library strandedness: reverse"
                 echo "Data type: single-end"
-                echo "Scaling factor file: ${meta.scaling_factor_file}"
-                echo "Scaling factor: \$scaling"
+                echo "Scaling factor: $scaling"
                 echo "Prefix: $prefix"
-                echo "Generating all BigWig types (unstranded + strand-specific with reverse library logic)"
                 
                 # 1. Unstranded BigWig (always generate)
-                echo "Generating unstranded BigWig..."
                 bamCoverage \\
                     --bam $bam \\
                     --numberOfProcessors $task.cpus \\
                     --binSize 1 \\
-                    --scaleFactor \$scaling \\
+                    --scaleFactor $scaling \\
                     -o ${prefix}.unstranded.norm.bw
 
                 # 2. Forward strand BigWig (reverse library: FLIPPED logic)
-                echo "Generating forward strand BigWig (reverse library, single-end - FLIPPED logic)..."
                 bamCoverage \\
                     --bam $bam \\
                     --numberOfProcessors $task.cpus \\
                     --binSize 1 \\
-                    --scaleFactor \$scaling \\
+                    --scaleFactor $scaling \\
                     --samFlagInclude 16 \\
                     -o ${prefix}.fwd.norm.bw
 
                 # 3. Reverse strand BigWig (reverse library: FLIPPED logic)
-                echo "Generating reverse strand BigWig (reverse library, single-end - FLIPPED logic)..."
                 bamCoverage \\
                     --bam $bam \\
                     --numberOfProcessors $task.cpus \\
                     --binSize 1 \\
-                    --scaleFactor \$scaling \\
+                    --scaleFactor $scaling \\
                     --samFlagExclude 16 \\
                     -o ${prefix}.rev.norm.bw
 
@@ -161,30 +130,22 @@ process DEEPTOOLS_BIGWIG_NORM {
                 if(strandedness == 'forward'){
                     """
                     # Read scaling factor from individual per-sample file
-                    scaling=\$(cat ${meta.scaling_factor_file})
-                    if [ -z "\$scaling" ]; then
-                        scaling=1.0
-                    fi
                     
                     echo "Sample: ${meta.id}"
                     echo "Library strandedness: forward"
                     echo "Data type: paired-end"
-                    echo "Scaling factor file: ${meta.scaling_factor_file}"
-                    echo "Scaling factor: \$scaling"
+                    echo "Scaling factor: $scaling"
                     echo "Prefix: $prefix"
-                    echo "Generating all BigWig types (unstranded + strand-specific with forward library logic)"
 
                     # 1. Unstranded BigWig (always generate)
-                    echo "Generating unstranded BigWig..."
                     bamCoverage \\
                         --bam $bam \\
                         --numberOfProcessors $task.cpus \\
                         --binSize 1 \\
-                        --scaleFactor \$scaling \\
+                        --scaleFactor $scaling \\
                         -o ${prefix}.unstranded.norm.bw
 
                     # 2. Forward strand BigWig (forward library: normal logic)
-                    echo "Generating forward strand BigWig (forward library, paired-end)..."
                     
                     # include reads that are 2nd in a pair (128); exclude reads mapped to reverse strand (16)
                     samtools view -b -f 128 -F 16 $bam > ${prefix}.fwd1.bam
@@ -200,12 +161,11 @@ process DEEPTOOLS_BIGWIG_NORM {
                         --bam ${prefix}.fwd.bam \\
                         --numberOfProcessors $task.cpus \\
                         --binSize 1 \\
-                        --scaleFactor \$scaling \\
+                        --scaleFactor $scaling \\
                         -o ${prefix}.fwd.norm.bw
                     rm -rf ${prefix}.fwd.bam ${prefix}.fwd.bam.bai
 
                     # 3. Reverse strand BigWig (forward library: normal logic)
-                    echo "Generating reverse strand BigWig (forward library, paired-end)..."
                     
                     # include reads that map to the reverse strand (16) and are second in a pair (128): 128 + 16 = 144
                     samtools view -b -f 144 $bam > ${prefix}.rev1.bam
@@ -221,7 +181,7 @@ process DEEPTOOLS_BIGWIG_NORM {
                         --bam ${prefix}.rev.bam \\
                         --numberOfProcessors $task.cpus \\
                         --binSize 1 \\
-                        --scaleFactor \$scaling \\
+                        --scaleFactor $scaling \\
                         -o ${prefix}.rev.norm.bw
                     rm -rf ${prefix}.rev.bam ${prefix}.rev.bam.bai
 
@@ -233,30 +193,22 @@ process DEEPTOOLS_BIGWIG_NORM {
                 } else {
                     """
                     # Read scaling factor from individual per-sample file
-                    scaling=\$(cat ${meta.scaling_factor_file})
-                    if [ -z "\$scaling" ]; then
-                        scaling=1.0
-                    fi
                     
                     echo "Sample: ${meta.id}"
                     echo "Library strandedness: reverse"
                     echo "Data type: paired-end"
-                    echo "Scaling factor file: ${meta.scaling_factor_file}"
-                    echo "Scaling factor: \$scaling"
+                    echo "Scaling factor: $scaling"
                     echo "Prefix: $prefix"
-                    echo "Generating all BigWig types (unstranded + strand-specific with REVERSE library logic)"
 
                     # 1. Unstranded BigWig (always generate)
-                    echo "Generating unstranded BigWig..."
                     bamCoverage \\
                         --bam $bam \\
                         --numberOfProcessors $task.cpus \\
                         --binSize 1 \\
-                        --scaleFactor \$scaling \\
+                        --scaleFactor $scaling \\
                         -o ${prefix}.unstranded.norm.bw
 
                     # 2. Forward strand BigWig (reverse library: FLIPPED logic)
-                    echo "Generating forward strand BigWig (reverse library, paired-end - FLIPPED logic)..."
                     
                     # For reverse library: reads mapped as 'reverse' actually represent forward transcripts
                     # include reads that map to the reverse strand (16) and are second in a pair (128): 128 + 16 = 144
@@ -273,12 +225,11 @@ process DEEPTOOLS_BIGWIG_NORM {
                         --bam ${prefix}.fwd.bam \\
                         --numberOfProcessors $task.cpus \\
                         --binSize 1 \\
-                        --scaleFactor \$scaling \\
+                        --scaleFactor $scaling \\
                         -o ${prefix}.fwd.norm.bw
                     rm -rf ${prefix}.fwd.bam ${prefix}.fwd.bam.bai
 
                     # 3. Reverse strand BigWig (reverse library: FLIPPED logic)
-                    echo "Generating reverse strand BigWig (reverse library, paired-end - FLIPPED logic)..."
                     
                     # For reverse library: reads mapped as 'forward' actually represent reverse transcripts
                     # include reads that are 2nd in a pair (128); exclude reads mapped to reverse strand (16)
@@ -295,7 +246,7 @@ process DEEPTOOLS_BIGWIG_NORM {
                         --bam ${prefix}.rev.bam \\
                         --numberOfProcessors $task.cpus \\
                         --binSize 1 \\
-                        --scaleFactor \$scaling \\
+                        --scaleFactor $scaling \\
                         -o ${prefix}.rev.norm.bw
                     rm -rf ${prefix}.rev.bam ${prefix}.rev.bam.bai
 
