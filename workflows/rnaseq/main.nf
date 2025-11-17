@@ -236,6 +236,7 @@ workflow RNASEQ {
         ch_fasta,
         ch_transcript_fasta,
         ch_gtf,
+        Channel.empty(),  // ch_salmon_index - not used, salmon quantification removed
         ch_sortmerna_index,
         ch_bbsplit_index,
         ch_ribo_db,
