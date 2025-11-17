@@ -1,0 +1,18 @@
+# Fix language detection for executable scripts
+bin/gtf2bed linguist-language=Perl
+
+# Ensure proper language detection
+*.nf linguist-language=Nextflow
+*.config linguist-language=Nextflow
+*.r linguist-language=R
+*.R linguist-language=R
+*.py linguist-language=Python
+
+# Documentation
+*.md linguist-documentation
+docs/** linguist-documentation
+
+# Generated files
+*.snap linguist-generated
+.nextflow/** linguist-generated
+work/** linguist-generated
