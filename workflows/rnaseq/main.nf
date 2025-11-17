@@ -9,8 +9,10 @@
 //
 include { NORMALIZE_DESEQ2_QC_INVARIANT_GENES } from '../../modules/local/normalize_deseq2_qc_invariant_genes'
 include { NORMALIZE_DESEQ2_QC_ALL_GENES      } from '../../modules/local/normalize_deseq2_qc_all_genes'
-include { NORMALIZE_DESEQ2_QC_INVARIANT_GENES as NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT } from '../../modules/local/normalize_deseq2_qc_invariant_genes'
-include { NORMALIZE_DESEQ2_QC_ALL_GENES as NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT } from '../../modules/local/normalize_deseq2_qc_all_genes'
+include { NORMALIZE_DESEQ2_QC_INVARIANT_GENES as NORMALIZE_DESEQ2_QC_INVARIANT_GENES_RSEM } from '../../modules/local/normalize_deseq2_qc_invariant_genes'
+include { NORMALIZE_DESEQ2_QC_ALL_GENES as NORMALIZE_DESEQ2_QC_ALL_GENES_RSEM } from '../../modules/local/normalize_deseq2_qc_all_genes'
+include { NORMALIZE_DESEQ2_QC_INVARIANT_GENES as NORMALIZE_DESEQ2_QC_INVARIANT_GENES_GENOME } from '../../modules/local/normalize_deseq2_qc_invariant_genes'
+include { NORMALIZE_DESEQ2_QC_ALL_GENES as NORMALIZE_DESEQ2_QC_ALL_GENES_GENOME } from '../../modules/local/normalize_deseq2_qc_all_genes'
 include { NORMALIZE_DESEQ2_QC_INVARIANT_GENES as NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO } from '../../modules/local/normalize_deseq2_qc_invariant_genes'
 include { NORMALIZE_DESEQ2_QC_ALL_GENES as NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO } from '../../modules/local/normalize_deseq2_qc_all_genes'
 include { DESEQ2_TRANSFORM                                  } from '../../modules/local/deseq2_transform'
@@ -367,40 +369,40 @@ workflow RNASEQ {
                 // MODULE: Invariant genes normalization (stable genes only)
                 //
                 if (normalization_methods.contains('invariant_genes')) {
-                    NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT (
+                    NORMALIZE_DESEQ2_QC_INVARIANT_GENES_RSEM (
                         QUANTIFY_RSEM.out.merged_counts_gene,
                         "STAR_RSEM"
                     )
                     
-                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.read_dist_norm_txt)
-                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.sample_distances_txt)
-                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_all_genes_txt)
-                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_top_genes_txt)
+                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_RSEM.out.read_dist_norm_txt)
+                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_RSEM.out.sample_distances_txt)
+                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_RSEM.out.pca_all_genes_txt)
+                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_RSEM.out.pca_top_genes_txt)
                     
-                    ch_normalization_versions = ch_normalization_versions.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.versions)
-                    ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors)
-                    ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors_individual)
-                    ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors_individual)
+                    ch_normalization_versions = ch_normalization_versions.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_RSEM.out.versions)
+                    ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_RSEM.out.scaling_factors)
+                    ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_RSEM.out.scaling_factors_individual)
+                    ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_RSEM.out.scaling_factors_individual)
                 }
                 
                 //
                 // MODULE: All genes normalization (default DESeq2 method)
                 //
                 if (normalization_methods.contains('all_genes') || (!normalization_methods.contains('invariant_genes') && !normalization_methods.contains('all_genes'))) {
-                    NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT (
+                    NORMALIZE_DESEQ2_QC_ALL_GENES_RSEM (
                         QUANTIFY_RSEM.out.merged_counts_gene,
                         "STAR_RSEM"
                     )
                     
-                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.read_dist_norm_txt)
-                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.sample_distances_txt)
-                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_all_genes_txt)
-                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_top_genes_txt)
+                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_RSEM.out.read_dist_norm_txt)
+                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_RSEM.out.sample_distances_txt)
+                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_RSEM.out.pca_all_genes_txt)
+                    ch_deseq2_raw_files = ch_deseq2_raw_files.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_RSEM.out.pca_top_genes_txt)
                     
-                    ch_normalization_versions = ch_normalization_versions.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.versions)
-                    ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors)
-                    ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors_individual)
-                    ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors_individual)
+                    ch_normalization_versions = ch_normalization_versions.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_RSEM.out.versions)
+                    ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_RSEM.out.scaling_factors)
+                    ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_RSEM.out.scaling_factors_individual)
+                    ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_RSEM.out.scaling_factors_individual)
                 }
                 
                 
@@ -457,40 +459,40 @@ workflow RNASEQ {
                 
                 
                 if (normalization_methods.contains('invariant_genes')) {
-                    NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT (
+                    NORMALIZE_DESEQ2_QC_INVARIANT_GENES_GENOME (
                         MERGE_GENOME_COUNTS.out.merged_counts.flatten().filter { it.name.contains('genome_exon_counts_merged.txt') }.first(),
                         "STAR_Genome"
                     )
                     
                     
-                    ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.read_dist_norm_txt)
-                    ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.sample_distances_txt)
-                    ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_all_genes_txt)
-                    ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.pca_top_genes_txt)
+                    ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_GENOME.out.read_dist_norm_txt)
+                    ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_GENOME.out.sample_distances_txt)
+                    ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_GENOME.out.pca_all_genes_txt)
+                    ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_GENOME.out.pca_top_genes_txt)
                     
-                    ch_normalization_versions_genome = ch_normalization_versions_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.versions)
-                    ch_normalization_scaling_factors_genome = ch_normalization_scaling_factors_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors)
-                    ch_normalization_scaling_factors_genome = ch_normalization_scaling_factors_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors_individual)
-                    ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors_individual)
+                    ch_normalization_versions_genome = ch_normalization_versions_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_GENOME.out.versions)
+                    ch_normalization_scaling_factors_genome = ch_normalization_scaling_factors_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_GENOME.out.scaling_factors)
+                    ch_normalization_scaling_factors_genome = ch_normalization_scaling_factors_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_GENOME.out.scaling_factors_individual)
+                    ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_GENOME.out.scaling_factors_individual)
                 }
                 
                 
                 if (normalization_methods.contains('all_genes') || (!normalization_methods.contains('invariant_genes') && !normalization_methods.contains('all_genes'))) {
-                    NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT (
+                    NORMALIZE_DESEQ2_QC_ALL_GENES_GENOME (
                         MERGE_GENOME_COUNTS.out.merged_counts.flatten().filter { it.name.contains('genome_exon_counts_merged.txt') }.first(),
                         "STAR_Genome"
                     )
                     
                     
-                    ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.read_dist_norm_txt)
-                    ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.sample_distances_txt)
-                    ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_all_genes_txt)
-                    ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.pca_top_genes_txt)
+                    ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_GENOME.out.read_dist_norm_txt)
+                    ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_GENOME.out.sample_distances_txt)
+                    ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_GENOME.out.pca_all_genes_txt)
+                    ch_deseq2_raw_files_genome = ch_deseq2_raw_files_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_GENOME.out.pca_top_genes_txt)
                     
-                    ch_normalization_versions_genome = ch_normalization_versions_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.versions)
-                    ch_normalization_scaling_factors_genome = ch_normalization_scaling_factors_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors)
-                    ch_normalization_scaling_factors_genome = ch_normalization_scaling_factors_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors_individual)
-                    ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors_individual)
+                    ch_normalization_versions_genome = ch_normalization_versions_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_GENOME.out.versions)
+                    ch_normalization_scaling_factors_genome = ch_normalization_scaling_factors_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_GENOME.out.scaling_factors)
+                    ch_normalization_scaling_factors_genome = ch_normalization_scaling_factors_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_GENOME.out.scaling_factors_individual)
+                    ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_GENOME.out.scaling_factors_individual)
                 }
                 
                 
