@@ -5,8 +5,8 @@
 */
 
 //
+// MODULE: Local modules for DESeq2 normalization with multiple methods
 //
-
 include { NORMALIZE_DESEQ2_QC_INVARIANT_GENES } from '../../modules/local/normalize_deseq2_qc_invariant_genes'
 include { NORMALIZE_DESEQ2_QC_ALL_GENES      } from '../../modules/local/normalize_deseq2_qc_all_genes'
 include { NORMALIZE_DESEQ2_QC_INVARIANT_GENES as NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT } from '../../modules/local/normalize_deseq2_qc_invariant_genes'
@@ -28,11 +28,15 @@ include { GENOME_COUNT                       } from '../../modules/local/genome_
 include { MERGE_GENOME_COUNTS                } from '../../modules/local/merge_genome_counts'
 include { MERGE_GENOME_COUNTS as MERGE_GENOME_COUNTS_HISAT2 } from '../../modules/local/merge_genome_counts'
 
+// 
+// MODULE: DeepTools BigWig normalization with DESeq2 scaling factors
+//
 include { DEEPTOOLS_BIGWIG_NORM              } from '../../modules/local/deeptools_bw_norm'
 include { DEEPTOOLS_BIGWIG_NORM as DEEPTOOLS_BIGWIG_NORM_INVARIANT } from '../../modules/local/deeptools_bw_norm'
 include { DEEPTOOLS_BIGWIG_NORM as DEEPTOOLS_BIGWIG_NORM_ALL_GENES } from '../../modules/local/deeptools_bw_norm'
 
 //
+// SUBWORKFLOW: Local subworkflows
 //
 include { ALIGN_STAR                            } from '../../subworkflows/local/align_star'
 include { QUANTIFY_RSEM                         } from '../../subworkflows/local/quantify_rsem'
@@ -53,6 +57,7 @@ include { mapBamToPublishedPath          } from '../../subworkflows/local/utils_
 */
 
 //
+// MODULE: Installed modules from nf-core/modules
 //
 include { DUPRADAR                   } from '../../modules/nf-core/dupradar'
 include { PRESEQ_LCEXTRAP            } from '../../modules/nf-core/preseq/lcextrap'
@@ -67,6 +72,7 @@ include { BEDTOOLS_GENOMECOV as BEDTOOLS_GENOMECOV_REV         } from '../../mod
 include { SAMTOOLS_INDEX                                       } from '../../modules/nf-core/samtools/index'
 
 //
+// SUBWORKFLOW: Installed subworkflows from nf-core/modules
 //
 include { paramsSummaryMap                 } from 'plugin/nf-schema'
 include { samplesheetToList                } from 'plugin/nf-schema'
@@ -329,12 +335,13 @@ workflow RNASEQ {
     }
 
     //
+    // SUBWORKFLOW: Quantify gene and transcript abundance with RSEM
     //
     if (params.aligner == 'star' && !params.skip_quantification_method && quantification_methods.size() > 0) {
         
         if (quantification_methods.contains('rsem')) {
             //
-
+            // QUANTIFICATION: STAR alignment + RSEM quantification
             //
             QUANTIFY_RSEM (
                 ch_transcriptome_bam,
@@ -346,7 +353,9 @@ workflow RNASEQ {
             ch_versions = ch_versions.mix(QUANTIFY_RSEM.out.versions)
 
             if (!params.skip_qc & !params.skip_deseq2_qc) {
-                
+                //
+                // DESeq2 normalization: Parse normalization methods (all_genes, invariant_genes, or both)
+                //
                 def normalization_methods = params.normalization_method instanceof List ? 
                     params.normalization_method : params.normalization_method.split(',').collect{it.trim()}
                 
@@ -355,7 +364,9 @@ workflow RNASEQ {
                 ch_normalization_scaling_factors = Channel.empty()
                 ch_deseq2_raw_files = Channel.empty()
                 
-                
+                //
+                // MODULE: Invariant genes normalization (stable genes only)
+                //
                 if (normalization_methods.contains('invariant_genes')) {
                     NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT (
                         QUANTIFY_RSEM.out.merged_counts_gene,
@@ -373,7 +384,9 @@ workflow RNASEQ {
                     ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors_individual)
                 }
                 
-                
+                //
+                // MODULE: All genes normalization (default DESeq2 method)
+                //
                 if (normalization_methods.contains('all_genes') || (!normalization_methods.contains('invariant_genes') && !normalization_methods.contains('all_genes'))) {
                     NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT (
                         QUANTIFY_RSEM.out.merged_counts_gene,
@@ -1118,17 +1131,23 @@ workflow RNASEQ {
     }
 
     //
+    // MODULE: Generate normalized BigWig files using DESeq2 scaling factors
+    // Uses mmrnaseq strategy: read scaling factors once, combine with BAM files, apply normalization
     //
     if (!params.skip_deeptools_norm && !params.skip_qc && !params.skip_deseq2_qc) {
         def normalization_methods = params.normalization_method instanceof List ? 
             params.normalization_method : params.normalization_method.split(',').collect{it.trim()}
         
-        // Prepare BAM channel with BAI
+        // Prepare BAM channel with BAI index files
         ch_bam_for_deeptools = ch_genome_bam
             .join(ch_genome_bam_index, by: [0])
         
         if (normalization_methods.contains('invariant_genes')) {
-            // Extract scaling factors for invariant genes normalization
+            //
+            // CHANNEL OPERATION: Extract scaling factors from invariant genes normalization
+            // Read individual *_scaling_factor.txt files, filter by 'invariant' directory
+            // Extract sample name and scaling value as tuple: [sample_name, scaling_value]
+            //
             ch_scaling_per_sample_invariant = ch_scaling_factors_individual
                 .flatten()
                 .filter { file ->
@@ -1142,7 +1161,11 @@ workflow RNASEQ {
                     [sample_name, scaling_value]
                 }
             
-            // Combine BAM files with scaling factors using mmrnaseq strategy
+            //
+            // CHANNEL OPERATION: Combine BAM files with scaling factors (mmrnaseq strategy)
+            // Use .combine() to create cartesian product, then filter by matching sample IDs
+            // Result: [meta, bam, bai, scaling_value]
+            //
             ch_combined_input_invariant = ch_bam_for_deeptools
                 .combine(ch_scaling_per_sample_invariant)
                 .map { meta, bam, bai, sample_id, scaling -> 
@@ -1157,7 +1180,11 @@ workflow RNASEQ {
         }
         
         if (normalization_methods.contains('all_genes') || (!normalization_methods.contains('invariant_genes') && !normalization_methods.contains('all_genes'))) {
-            // Extract scaling factors for all genes normalization
+            //
+            // CHANNEL OPERATION: Extract scaling factors from all genes normalization
+            // Read individual *_scaling_factor.txt files, exclude 'invariant' directory
+            // Extract sample name and scaling value as tuple: [sample_name, scaling_value]
+            //
             ch_scaling_per_sample_all_genes = ch_scaling_factors_individual
                 .flatten()
                 .filter { file ->
@@ -1171,7 +1198,11 @@ workflow RNASEQ {
                     [sample_name, scaling_value]
                 }
             
-            // Combine BAM files with scaling factors using mmrnaseq strategy
+            //
+            // CHANNEL OPERATION: Combine BAM files with scaling factors (mmrnaseq strategy)
+            // Use .combine() to create cartesian product, then filter by matching sample IDs
+            // Result: [meta, bam, bai, scaling_value]
+            //
             ch_combined_input_all_genes = ch_bam_for_deeptools
                 .combine(ch_scaling_per_sample_all_genes)
                 .map { meta, bam, bai, sample_id, scaling -> 
@@ -1187,12 +1218,14 @@ workflow RNASEQ {
     }
 
     //
+    // MODULE: Collate software versions from all tools used in the pipeline
     //
     softwareVersionsToYAML(ch_versions)
         .collectFile(storeDir: "${params.outdir}/pipeline_info", name: 'nf_core_rnaseq_software_mqc_versions.yml', sort: true, newLine: true)
         .set { ch_collated_versions }
 
     //
+    // MODULE: MultiQC - Aggregate all QC reports into a single HTML report
     //
     ch_multiqc_report = Channel.empty()
 

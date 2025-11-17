@@ -1,0 +1,13 @@
+Key sections that need important comments restored:
+
+1. MODULE IMPORTS section (lines 1-100)
+2. WORKFLOW DEFINITION section 
+3. INPUT CHANNELS section
+4. PREPROCESSING section
+5. ALIGNMENT sections (STAR, HISAT2, etc.)
+6. QUANTIFICATION sections
+7. POST-ALIGNMENT QC section
+8. DESEQ2 NORMALIZATION section ← CRITICAL
+9. DEEPTOOLS BIGWIG NORMALIZATION section ← CRITICAL (NEW)
+10. MULTIQC section
+11. OUTPUT CHANNELS section
