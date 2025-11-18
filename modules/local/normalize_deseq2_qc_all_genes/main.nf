@@ -48,8 +48,8 @@ process NORMALIZE_DESEQ2_QC_ALL_GENES {
     normalize_deseq2_qc_all_genes.r \\
         --count_file $counts \\
         --outdir ./ \\
-        --outprefix $prefix \\
-        --quantifier $quantifier \\
+        --outprefix "$prefix" \\
+        --quantifier "$quantifier" \\
         --cores $task.cpus \\
         $args
 
