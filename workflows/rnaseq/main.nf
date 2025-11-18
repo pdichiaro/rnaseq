@@ -72,6 +72,7 @@ include { MULTIQC                    } from '../../modules/nf-core/multiqc'
 include { MULTIQC_WITH_SUBFOLDERS    } from '../../modules/local/multiqc_with_subfolders'
 include { BEDTOOLS_GENOMECOV as BEDTOOLS_GENOMECOV_FW          } from '../../modules/nf-core/bedtools/genomecov'
 include { BEDTOOLS_GENOMECOV as BEDTOOLS_GENOMECOV_REV         } from '../../modules/nf-core/bedtools/genomecov'
+include { BEDTOOLS_GENOMECOV as BEDTOOLS_GENOMECOV_UNSTRANDED  } from '../../modules/nf-core/bedtools/genomecov'
 include { SAMTOOLS_INDEX                                       } from '../../modules/nf-core/samtools/index'
 
 //
@@ -86,6 +87,7 @@ include { BAM_MARKDUPLICATES_PICARD        } from '../../subworkflows/nf-core/ba
 include { BAM_RSEQC                        } from '../../subworkflows/nf-core/bam_rseqc'
 include { BEDGRAPH_BEDCLIP_BEDGRAPHTOBIGWIG as BEDGRAPH_BEDCLIP_BEDGRAPHTOBIGWIG_FORWARD } from '../../subworkflows/nf-core/bedgraph_bedclip_bedgraphtobigwig'
 include { BEDGRAPH_BEDCLIP_BEDGRAPHTOBIGWIG as BEDGRAPH_BEDCLIP_BEDGRAPHTOBIGWIG_REVERSE } from '../../subworkflows/nf-core/bedgraph_bedclip_bedgraphtobigwig'
+include { BEDGRAPH_BEDCLIP_BEDGRAPHTOBIGWIG as BEDGRAPH_BEDCLIP_BEDGRAPHTOBIGWIG_UNSTRANDED } from '../../subworkflows/nf-core/bedgraph_bedclip_bedgraphtobigwig'
 include { QUANTIFY_PSEUDO_ALIGNMENT                         } from '../../subworkflows/nf-core/quantify_pseudo_alignment'
 include { FASTQ_QC_TRIM_FILTER_SETSTRANDEDNESS              } from '../../subworkflows/nf-core/fastq_qc_trim_filter_setstrandedness'
 
@@ -787,6 +789,12 @@ workflow RNASEQ {
             'bedGraph',
             true
         )
+        BEDTOOLS_GENOMECOV_UNSTRANDED (
+            ch_genomecov_input,
+            [],
+            'bedGraph',
+            true
+        )
 
         ch_versions = ch_versions.mix(BEDTOOLS_GENOMECOV_FW.out.versions.first())
 
@@ -800,6 +808,11 @@ workflow RNASEQ {
 
         BEDGRAPH_BEDCLIP_BEDGRAPHTOBIGWIG_REVERSE (
             BEDTOOLS_GENOMECOV_REV.out.genomecov,
+            ch_chrom_sizes
+        )
+
+        BEDGRAPH_BEDCLIP_BEDGRAPHTOBIGWIG_UNSTRANDED (
+            BEDTOOLS_GENOMECOV_UNSTRANDED.out.genomecov,
             ch_chrom_sizes
         )
 
