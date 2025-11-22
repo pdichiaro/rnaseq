@@ -1064,7 +1064,7 @@ workflow RNASEQ {
             //
             // CHANNEL OPERATION: Extract scaling factors from invariant genes normalization
             // Read individual *_scaling_factor.txt files, filter by 'invariant' directory
-            // Extract sample name and scaling value as tuple: [sample_name, scaling_value]
+            // Extract sample name, scaling value, and quantification method as tuple: [sample_name, scaling_value, quant_method]
             //
             ch_scaling_per_sample_invariant = ch_scaling_factors_individual
                 .flatten()
@@ -1076,18 +1076,30 @@ workflow RNASEQ {
                 .map { file ->
                     def sample_name = file.name.replaceAll('_scaling_factor\\.txt$', '')
                     def scaling_value = file.text.trim()
-                    [sample_name, scaling_value]
+                    // Detect quantification method from file path
+                    def file_path = file.toString()
+                    def quant_method = file_path.contains('/rsem/') ? 'rsem' : 
+                                      file_path.contains('/genome/') ? 'genome' :
+                                      file_path.contains('/salmon/') ? 'salmon' : 'unknown'
+                    [sample_name, scaling_value, quant_method]
                 }
             
             //
             // CHANNEL OPERATION: Combine BAM files with scaling factors (mmrnaseq strategy)
             // Use .combine() to create cartesian product, then filter by matching sample IDs
             // Result: [meta, bam, bai, scaling_value]
+            // Add quantification method to meta map for publishDir routing
             //
             ch_combined_input_invariant = ch_bam_for_deeptools
                 .combine(ch_scaling_per_sample_invariant)
-                .map { meta, bam, bai, sample_id, scaling -> 
-                    meta.id == sample_id ? [meta, bam, bai, scaling] : null
+                .map { meta, bam, bai, sample_id, scaling, quant_method -> 
+                    if (meta.id == sample_id) {
+                        def new_meta = meta.clone()
+                        new_meta.quantification = quant_method
+                        [new_meta, bam, bai, scaling]
+                    } else {
+                        null
+                    }
                 }
                 .filter { it != null }
             
@@ -1101,7 +1113,7 @@ workflow RNASEQ {
             //
             // CHANNEL OPERATION: Extract scaling factors from all genes normalization
             // Read individual *_scaling_factor.txt files, exclude 'invariant' directory
-            // Extract sample name and scaling value as tuple: [sample_name, scaling_value]
+            // Extract sample name, scaling value, and quantification method as tuple: [sample_name, scaling_value, quant_method]
             //
             ch_scaling_per_sample_all_genes = ch_scaling_factors_individual
                 .flatten()
@@ -1113,18 +1125,30 @@ workflow RNASEQ {
                 .map { file ->
                     def sample_name = file.name.replaceAll('_scaling_factor\\.txt$', '')
                     def scaling_value = file.text.trim()
-                    [sample_name, scaling_value]
+                    // Detect quantification method from file path
+                    def file_path = file.toString()
+                    def quant_method = file_path.contains('/rsem/') ? 'rsem' : 
+                                      file_path.contains('/genome/') ? 'genome' :
+                                      file_path.contains('/salmon/') ? 'salmon' : 'unknown'
+                    [sample_name, scaling_value, quant_method]
                 }
             
             //
             // CHANNEL OPERATION: Combine BAM files with scaling factors (mmrnaseq strategy)
             // Use .combine() to create cartesian product, then filter by matching sample IDs
             // Result: [meta, bam, bai, scaling_value]
+            // Add quantification method to meta map for publishDir routing
             //
             ch_combined_input_all_genes = ch_bam_for_deeptools
                 .combine(ch_scaling_per_sample_all_genes)
-                .map { meta, bam, bai, sample_id, scaling -> 
-                    meta.id == sample_id ? [meta, bam, bai, scaling] : null
+                .map { meta, bam, bai, sample_id, scaling, quant_method -> 
+                    if (meta.id == sample_id) {
+                        def new_meta = meta.clone()
+                        new_meta.quantification = quant_method
+                        [new_meta, bam, bai, scaling]
+                    } else {
+                        null
+                    }
                 }
                 .filter { it != null }
             
