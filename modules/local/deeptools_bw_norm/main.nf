@@ -9,10 +9,10 @@ process DEEPTOOLS_BIGWIG_NORM {
     tuple val(meta), path(bam), path(bai), val(scaling)
 
     output:
-    path "*.unstranded.norm.bw" , emit: unstranded_bw
-    path "*.fwd.norm.bw"        , optional:true, emit: fw_bw
-    path "*.rev.norm.bw"        , optional:true, emit: rev_bw
-    path "versions.yml"         , emit: versions
+    tuple val(meta), path("*.unstranded.norm.bw"), emit: unstranded_bw
+    tuple val(meta), path("*.fwd.norm.bw")       , optional:true, emit: fw_bw
+    tuple val(meta), path("*.rev.norm.bw")       , optional:true, emit: rev_bw
+    path "versions.yml"                          , emit: versions
  
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
