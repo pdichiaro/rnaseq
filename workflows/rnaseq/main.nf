@@ -60,14 +60,23 @@ include { mapBamToPublishedPath          } from '../../subworkflows/local/utils_
 // MODULE: Installed modules from nf-core/modules
 //
 include { DUPRADAR                   } from '../../modules/nf-core/dupradar'
+include { DUPRADAR as DUPRADAR_STAR  } from '../../modules/nf-core/dupradar'
+include { DUPRADAR as DUPRADAR_HISAT2 } from '../../modules/nf-core/dupradar'
 include { PRESEQ_LCEXTRAP            } from '../../modules/nf-core/preseq/lcextrap'
+include { PRESEQ_LCEXTRAP as PRESEQ_LCEXTRAP_STAR } from '../../modules/nf-core/preseq/lcextrap'
+include { PRESEQ_LCEXTRAP as PRESEQ_LCEXTRAP_HISAT2 } from '../../modules/nf-core/preseq/lcextrap'
 include { QUALIMAP_RNASEQ            } from '../../modules/nf-core/qualimap/rnaseq'
+include { QUALIMAP_RNASEQ as QUALIMAP_RNASEQ_STAR } from '../../modules/nf-core/qualimap/rnaseq'
+include { QUALIMAP_RNASEQ as QUALIMAP_RNASEQ_HISAT2 } from '../../modules/nf-core/qualimap/rnaseq'
 include { STRINGTIE_STRINGTIE        } from '../../modules/nf-core/stringtie/stringtie'
 include { SUBREAD_FEATURECOUNTS as SUBREAD_FEATURECOUNTS_EXTRA } from '../../modules/nf-core/subread/featurecounts'
 include { KRAKEN2_KRAKEN2 as KRAKEN2 } from '../../modules/nf-core/kraken2/kraken2/main'
 include { BRACKEN_BRACKEN as BRACKEN } from '../../modules/nf-core/bracken/bracken/main'
 include { MULTIQC                    } from '../../modules/nf-core/multiqc'
 include { MULTIQC_WITH_SUBFOLDERS    } from '../../modules/local/multiqc_with_subfolders'
+include { MULTIQC_WITH_SUBFOLDERS as MULTIQC_STAR } from '../../modules/local/multiqc_with_subfolders'
+include { MULTIQC_WITH_SUBFOLDERS as MULTIQC_HISAT2 } from '../../modules/local/multiqc_with_subfolders'
+include { MULTIQC_WITH_SUBFOLDERS as MULTIQC_KALLISTO } from '../../modules/local/multiqc_with_subfolders'
 include { BEDTOOLS_GENOMECOV as BEDTOOLS_GENOMECOV_FW          } from '../../modules/nf-core/bedtools/genomecov'
 include { BEDTOOLS_GENOMECOV as BEDTOOLS_GENOMECOV_REV         } from '../../modules/nf-core/bedtools/genomecov'
 include { BEDTOOLS_GENOMECOV as BEDTOOLS_GENOMECOV_UNSTRANDED  } from '../../modules/nf-core/bedtools/genomecov'
@@ -82,7 +91,11 @@ include { paramsSummaryMultiqc             } from '../../subworkflows/nf-core/ut
 include { softwareVersionsToYAML           } from '../../subworkflows/nf-core/utils_nfcore_pipeline'
 include { FASTQ_ALIGN_HISAT2               } from '../../subworkflows/nf-core/fastq_align_hisat2'
 include { BAM_MARKDUPLICATES_PICARD        } from '../../subworkflows/nf-core/bam_markduplicates_picard'
+include { BAM_MARKDUPLICATES_PICARD as BAM_MARKDUPLICATES_PICARD_STAR } from '../../subworkflows/nf-core/bam_markduplicates_picard'
+include { BAM_MARKDUPLICATES_PICARD as BAM_MARKDUPLICATES_PICARD_HISAT2 } from '../../subworkflows/nf-core/bam_markduplicates_picard'
 include { BAM_RSEQC                        } from '../../subworkflows/nf-core/bam_rseqc'
+include { BAM_RSEQC as BAM_RSEQC_STAR      } from '../../subworkflows/nf-core/bam_rseqc'
+include { BAM_RSEQC as BAM_RSEQC_HISAT2    } from '../../subworkflows/nf-core/bam_rseqc'
 include { BEDGRAPH_BEDCLIP_BEDGRAPHTOBIGWIG as BEDGRAPH_BEDCLIP_BEDGRAPHTOBIGWIG_FORWARD } from '../../subworkflows/nf-core/bedgraph_bedclip_bedgraphtobigwig'
 include { BEDGRAPH_BEDCLIP_BEDGRAPHTOBIGWIG as BEDGRAPH_BEDCLIP_BEDGRAPHTOBIGWIG_REVERSE } from '../../subworkflows/nf-core/bedgraph_bedclip_bedgraphtobigwig'
 include { BEDGRAPH_BEDCLIP_BEDGRAPHTOBIGWIG as BEDGRAPH_BEDCLIP_BEDGRAPHTOBIGWIG_UNSTRANDED } from '../../subworkflows/nf-core/bedgraph_bedclip_bedgraphtobigwig'
@@ -180,6 +193,20 @@ workflow RNASEQ {
     ch_multiqc_star_files = Channel.empty()
     ch_multiqc_hisat2_files = Channel.empty()
     ch_multiqc_kallisto_files = Channel.empty()
+    
+    // Separate BAM channels per aligner for post-alignment QC
+    ch_genome_bam_star = Channel.empty()
+    ch_genome_bam_star_index = Channel.empty()
+    ch_genome_bam_hisat2 = Channel.empty()
+    ch_genome_bam_hisat2_index = Channel.empty()
+    
+    // Separate MultiQC channels per aligner
+    ch_multiqc_shared = Channel.empty()          // Pre-alignment QC (FastQC, trimming, strandedness)
+    ch_multiqc_star_qc = Channel.empty()         // STAR post-alignment QC
+    ch_multiqc_star_quant = Channel.empty()      // STAR quantification
+    ch_multiqc_hisat2_qc = Channel.empty()       // HISAT2 post-alignment QC
+    ch_multiqc_hisat2_quant = Channel.empty()    // HISAT2 quantification
+    
     ch_trim_status = Channel.empty()
     ch_map_status = Channel.empty()
     ch_strand_status = Channel.empty()
@@ -258,6 +285,8 @@ workflow RNASEQ {
         false
     )
 
+    // Route pre-alignment QC to shared channel (used by all aligner reports)
+    ch_multiqc_shared                 = ch_multiqc_shared.mix(FASTQ_QC_TRIM_FILTER_SETSTRANDEDNESS.out.multiqc_files)
     ch_multiqc_files                  = ch_multiqc_files.mix(FASTQ_QC_TRIM_FILTER_SETSTRANDEDNESS.out.multiqc_files)
     ch_versions                       = ch_versions.mix(FASTQ_QC_TRIM_FILTER_SETSTRANDEDNESS.out.versions)
     ch_strand_inferred_filtered_fastq = FASTQ_QC_TRIM_FILTER_SETSTRANDEDNESS.out.reads
@@ -294,6 +323,10 @@ workflow RNASEQ {
             params.use_sentieon_star
         )
 
+        // Separate STAR BAM outputs for aligner-specific QC
+        ch_genome_bam_star               = ch_genome_bam_star.mix(ALIGN_STAR.out.bam)
+        ch_genome_bam_star_index         = ch_genome_bam_star_index.mix(params.bam_csi_index ? ALIGN_STAR.out.csi : ALIGN_STAR.out.bai)
+        // Keep old channels for backward compatibility
         ch_genome_bam                    = ch_genome_bam.mix(ALIGN_STAR.out.bam)
         ch_genome_bam_index              = ch_genome_bam_index.mix(params.bam_csi_index ? ALIGN_STAR.out.csi : ALIGN_STAR.out.bai)
         ch_transcriptome_bam             = ch_transcriptome_bam.mix(ALIGN_STAR.out.bam_transcript)
@@ -302,6 +335,7 @@ workflow RNASEQ {
         ch_star_log                      = ALIGN_STAR.out.log_final
         ch_unaligned_sequences           = ALIGN_STAR.out.fastq
         ch_multiqc_star_files            = ch_multiqc_star_files.mix(ch_star_log.collect{it[1]})
+        ch_multiqc_star_qc               = ch_multiqc_star_qc.mix(ch_star_log.collect{it[1]})
 
         ch_versions = ch_versions.mix(ALIGN_STAR.out.versions)
 
@@ -352,6 +386,7 @@ workflow RNASEQ {
                 ch_annotation_matrix
             )
             ch_multiqc_files = ch_multiqc_files.mix(QUANTIFY_RSEM.out.stat.collect{it[1]})
+            ch_multiqc_star_quant = ch_multiqc_star_quant.mix(QUANTIFY_RSEM.out.stat.collect{it[1]})
             ch_versions = ch_versions.mix(QUANTIFY_RSEM.out.versions)
 
             if (!params.skip_qc & !params.skip_deseq2_qc) {
@@ -501,6 +536,7 @@ workflow RNASEQ {
                     "star_genome"
                 )
                 ch_multiqc_files = ch_multiqc_files.mix(DESEQ2_SECTION_HEADER_STAR_GENOME.out.section_header)
+                ch_multiqc_star_quant = ch_multiqc_star_quant.mix(DESEQ2_SECTION_HEADER_STAR_GENOME.out.section_header)
                 ch_versions = ch_versions.mix(DESEQ2_SECTION_HEADER_STAR_GENOME.out.versions)
                 
                 
@@ -511,6 +547,7 @@ workflow RNASEQ {
                     ch_deseq2_read_dist_header
                 )
                 ch_multiqc_files = ch_multiqc_files.mix(DESEQ2_TRANSFORM_STAR_GENOME.out.multiqc_files)
+                ch_multiqc_star_quant = ch_multiqc_star_quant.mix(DESEQ2_TRANSFORM_STAR_GENOME.out.multiqc_files)
                 
                 
                 ch_versions = ch_versions.mix(ch_normalization_versions_genome)
@@ -528,11 +565,16 @@ workflow RNASEQ {
             ch_splicesites.map { [ [:], it ] },
             ch_fasta.map { [ [:], it ] }
         )
+        // Separate HISAT2 BAM outputs for aligner-specific QC
+        ch_genome_bam_hisat2      = ch_genome_bam_hisat2.mix(FASTQ_ALIGN_HISAT2.out.bam)
+        ch_genome_bam_hisat2_index = ch_genome_bam_hisat2_index.mix(params.bam_csi_index ? FASTQ_ALIGN_HISAT2.out.csi : FASTQ_ALIGN_HISAT2.out.bai)
+        // Keep old channels for backward compatibility
         ch_genome_bam          = ch_genome_bam.mix(FASTQ_ALIGN_HISAT2.out.bam)
         ch_genome_bam_index    = ch_genome_bam_index.mix(params.bam_csi_index ? FASTQ_ALIGN_HISAT2.out.csi : FASTQ_ALIGN_HISAT2.out.bai)
         ch_unprocessed_bams    = ch_genome_bam.map { meta, bam -> [ meta, bam, '' ] }
         ch_unaligned_sequences = FASTQ_ALIGN_HISAT2.out.fastq
         ch_multiqc_hisat2_files = ch_multiqc_hisat2_files.mix(FASTQ_ALIGN_HISAT2.out.summary.collect{it[1]})
+        ch_multiqc_hisat2_qc    = ch_multiqc_hisat2_qc.mix(FASTQ_ALIGN_HISAT2.out.summary.collect{it[1]})
 
         ch_versions = ch_versions.mix(FASTQ_ALIGN_HISAT2.out.versions)
 
@@ -634,6 +676,7 @@ workflow RNASEQ {
                     "hisat2_genome"
                 )
                 ch_multiqc_files = ch_multiqc_files.mix(DESEQ2_SECTION_HEADER_HISAT2.out.section_header)
+                ch_multiqc_hisat2_quant = ch_multiqc_hisat2_quant.mix(DESEQ2_SECTION_HEADER_HISAT2.out.section_header)
                 ch_versions = ch_versions.mix(DESEQ2_SECTION_HEADER_HISAT2.out.versions)
                 
                 
@@ -644,6 +687,7 @@ workflow RNASEQ {
                     ch_deseq2_read_dist_header
                 )
                 ch_multiqc_files = ch_multiqc_files.mix(DESEQ2_TRANSFORM_HISAT2.out.multiqc_files)
+                ch_multiqc_hisat2_quant = ch_multiqc_hisat2_quant.mix(DESEQ2_TRANSFORM_HISAT2.out.multiqc_files)
                 ch_versions = ch_versions.mix(DESEQ2_TRANSFORM_HISAT2.out.versions.first())
                 
                 
