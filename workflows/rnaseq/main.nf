@@ -179,7 +179,6 @@ workflow RNASEQ {
     ch_multiqc_files = Channel.empty()
     ch_multiqc_star_files = Channel.empty()
     ch_multiqc_hisat2_files = Channel.empty()
-    ch_multiqc_salmon_files = Channel.empty()
     ch_multiqc_kallisto_files = Channel.empty()
     ch_trim_status = Channel.empty()
     ch_map_status = Channel.empty()
@@ -969,10 +968,8 @@ workflow RNASEQ {
         ch_counts_gene = QUANTIFY_PSEUDO_ALIGNMENT.out.counts_gene
         ch_versions = ch_versions.mix(QUANTIFY_PSEUDO_ALIGNMENT.out.versions)
         
-        // Route MultiQC files to appropriate aligner-specific channel
-        if (params.pseudo_aligner == 'salmon') {
-            ch_multiqc_salmon_files = ch_multiqc_salmon_files.mix(QUANTIFY_PSEUDO_ALIGNMENT.out.multiqc.collect{it[1]})
-        } else if (params.pseudo_aligner == 'kallisto') {
+        // Only Kallisto is a true pseudo-aligner (salmon used with STAR is quantification, not pseudo-alignment)
+        if (params.pseudo_aligner == 'kallisto') {
             ch_multiqc_kallisto_files = ch_multiqc_kallisto_files.mix(QUANTIFY_PSEUDO_ALIGNMENT.out.multiqc.collect{it[1]})
             ch_genome_bam = ch_genome_bam.mix(QUANTIFY_PSEUDO_ALIGNMENT.out.bam)
             ch_genome_bam_index = ch_genome_bam_index.mix(QUANTIFY_PSEUDO_ALIGNMENT.out.bai)
@@ -1265,7 +1262,6 @@ workflow RNASEQ {
             ch_multiqc_files.flatten().collect(),
             ch_multiqc_star_files.flatten().collect().ifEmpty([]),
             ch_multiqc_hisat2_files.flatten().collect().ifEmpty([]),
-            ch_multiqc_salmon_files.flatten().collect().ifEmpty([]),
             ch_multiqc_kallisto_files.flatten().collect().ifEmpty([]),
             ch_multiqc_config.toList(),
             ch_multiqc_custom_config.toList(),

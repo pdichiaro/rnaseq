@@ -10,7 +10,6 @@ process MULTIQC_WITH_SUBFOLDERS {
     path  multiqc_files, stageAs: "?/*"
     path  star_files, stageAs: "star/*"
     path  hisat2_files, stageAs: "hisat2/*"
-    path  salmon_files, stageAs: "salmon/*"
     path  kallisto_files, stageAs: "kallisto/*"
     path(multiqc_config)
     path(extra_multiqc_config)
