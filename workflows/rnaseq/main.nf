@@ -1076,11 +1076,26 @@ workflow RNASEQ {
                 .map { file ->
                     def sample_name = file.name.replaceAll('_scaling_factor\\.txt$', '')
                     def scaling_value = file.text.trim()
-                    // Detect quantification method from file path
+                    // Detect quantification method from file path with improved fallback logic
                     def file_path = file.toString()
-                    def quant_method = file_path.contains('/rsem/') ? 'rsem' : 
-                                      file_path.contains('/genome/') ? 'genome' :
-                                      file_path.contains('/salmon/') ? 'salmon' : 'unknown'
+                    def quant_method = 'unknown'
+                    
+                    // Check for quantification method in path
+                    if (file_path.contains('/rsem/')) {
+                        quant_method = 'rsem'
+                    } else if (file_path.contains('/genome/')) {
+                        quant_method = 'genome'
+                    } else if (file_path.contains('/salmon/')) {
+                        quant_method = 'salmon'
+                    } else if (file_path.contains('/kallisto/')) {
+                        quant_method = 'kallisto'
+                    } else {
+                        // Fallback to params.quantification if path detection fails
+                        quant_method = params.quantification ?: 'genome'
+                        log.warn "INVARIANT_GENES: Could not detect quantification method from path: ${file_path}"
+                        log.warn "INVARIANT_GENES: Using fallback: ${quant_method}"
+                    }
+                    
                     [sample_name, scaling_value, quant_method]
                 }
             
@@ -1103,8 +1118,15 @@ workflow RNASEQ {
                 }
                 .filter { it != null }
             
+            // Debug output for invariant genes channel
+            ch_combined_input_invariant
+                .view { meta, bam, bai, scaling -> 
+                    "DEEPTOOLS_INVARIANT: Sample=${meta.id}, Quant=${meta.quantification}, Scaling=${scaling}, BAM=${bam.name}" 
+                }
+                .set { ch_combined_input_invariant_debug }
+            
             DEEPTOOLS_BIGWIG_NORM_INVARIANT (
-                ch_combined_input_invariant
+                ch_combined_input_invariant_debug
             )
             ch_versions = ch_versions.mix(DEEPTOOLS_BIGWIG_NORM_INVARIANT.out.versions)
         }
@@ -1125,11 +1147,26 @@ workflow RNASEQ {
                 .map { file ->
                     def sample_name = file.name.replaceAll('_scaling_factor\\.txt$', '')
                     def scaling_value = file.text.trim()
-                    // Detect quantification method from file path
+                    // Detect quantification method from file path with improved fallback logic
                     def file_path = file.toString()
-                    def quant_method = file_path.contains('/rsem/') ? 'rsem' : 
-                                      file_path.contains('/genome/') ? 'genome' :
-                                      file_path.contains('/salmon/') ? 'salmon' : 'unknown'
+                    def quant_method = 'unknown'
+                    
+                    // Check for quantification method in path
+                    if (file_path.contains('/rsem/')) {
+                        quant_method = 'rsem'
+                    } else if (file_path.contains('/genome/')) {
+                        quant_method = 'genome'
+                    } else if (file_path.contains('/salmon/')) {
+                        quant_method = 'salmon'
+                    } else if (file_path.contains('/kallisto/')) {
+                        quant_method = 'kallisto'
+                    } else {
+                        // Fallback to params.quantification if path detection fails
+                        quant_method = params.quantification ?: 'genome'
+                        log.warn "ALL_GENES: Could not detect quantification method from path: ${file_path}"
+                        log.warn "ALL_GENES: Using fallback: ${quant_method}"
+                    }
+                    
                     [sample_name, scaling_value, quant_method]
                 }
             
@@ -1152,8 +1189,15 @@ workflow RNASEQ {
                 }
                 .filter { it != null }
             
+            // Debug output for all genes channel
+            ch_combined_input_all_genes
+                .view { meta, bam, bai, scaling -> 
+                    "DEEPTOOLS_ALL_GENES: Sample=${meta.id}, Quant=${meta.quantification}, Scaling=${scaling}, BAM=${bam.name}" 
+                }
+                .set { ch_combined_input_all_genes_debug }
+            
             DEEPTOOLS_BIGWIG_NORM_ALL_GENES (
-                ch_combined_input_all_genes
+                ch_combined_input_all_genes_debug
             )
             ch_versions = ch_versions.mix(DEEPTOOLS_BIGWIG_NORM_ALL_GENES.out.versions)
         }
