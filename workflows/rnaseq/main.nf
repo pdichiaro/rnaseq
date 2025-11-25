@@ -1350,7 +1350,7 @@ workflow RNASEQ {
                 Channel.empty(),
                 Channel.empty(),
                 Channel.empty(),
-                ch_multiqc_config_kallisto.toList(),
+                ch_multiqc_config.toList(),
                 ch_multiqc_custom_config.toList(),
                 ch_multiqc_logo.toList(),
                 ch_name_replacements,
