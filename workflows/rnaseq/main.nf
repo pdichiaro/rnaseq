@@ -1302,18 +1302,62 @@ workflow RNASEQ {
             .collectFile(name: 'name_replacement.txt', newLine: true)
             .ifEmpty([])
 
-        MULTIQC_WITH_SUBFOLDERS (
-            ch_multiqc_files.flatten().collect(),
-            ch_multiqc_star_files.flatten().collect().ifEmpty([]),
-            ch_multiqc_hisat2_files.flatten().collect().ifEmpty([]),
-            ch_multiqc_kallisto_files.flatten().collect().ifEmpty([]),
-            ch_multiqc_config.toList(),
-            ch_multiqc_custom_config.toList(),
-            ch_multiqc_logo.toList(),
-            ch_name_replacements,
-            []
-        )
-        ch_multiqc_report = MULTIQC_WITH_SUBFOLDERS.out.report
+        // Generate separate MultiQC reports for each aligner/pseudo-aligner
+        // Each report gets its own dedicated channel mixing shared QC + aligner-specific QC
+        
+        // Prepare shared QC files that go in all reports
+        ch_multiqc_shared = ch_multiqc_files.flatten().collect()
+        
+        // Initialize report channel
+        ch_multiqc_report = Channel.empty()
+        
+        // STAR MultiQC Report
+        if (params.aligner && (params.aligner == 'star_salmon' || params.aligner == 'star_rsem' || params.aligner == 'star')) {
+            MULTIQC_STAR (
+                ch_multiqc_shared.mix(ch_multiqc_star_files.flatten()).collect(),
+                Channel.empty(),  // No subfolders needed for individual reports
+                Channel.empty(),
+                Channel.empty(),
+                ch_multiqc_config.toList(),
+                ch_multiqc_custom_config.toList(),
+                ch_multiqc_logo.toList(),
+                ch_name_replacements,
+                []
+            )
+            ch_multiqc_report = ch_multiqc_report.mix(MULTIQC_STAR.out.report)
+        }
+        
+        // HISAT2 MultiQC Report
+        if (params.aligner == 'hisat2') {
+            MULTIQC_HISAT2 (
+                ch_multiqc_shared.mix(ch_multiqc_hisat2_files.flatten()).collect(),
+                Channel.empty(),
+                Channel.empty(),
+                Channel.empty(),
+                ch_multiqc_config.toList(),
+                ch_multiqc_custom_config.toList(),
+                ch_multiqc_logo.toList(),
+                ch_name_replacements,
+                []
+            )
+            ch_multiqc_report = ch_multiqc_report.mix(MULTIQC_HISAT2.out.report)
+        }
+        
+        // Kallisto MultiQC Report
+        if (params.pseudo_aligner == 'kallisto') {
+            MULTIQC_KALLISTO (
+                ch_multiqc_shared.mix(ch_multiqc_kallisto_files.flatten()).collect(),
+                Channel.empty(),
+                Channel.empty(),
+                Channel.empty(),
+                ch_multiqc_config_kallisto.toList(),
+                ch_multiqc_custom_config.toList(),
+                ch_multiqc_logo.toList(),
+                ch_name_replacements,
+                []
+            )
+            ch_multiqc_report = ch_multiqc_report.mix(MULTIQC_KALLISTO.out.report)
+        }
     }
 
     //

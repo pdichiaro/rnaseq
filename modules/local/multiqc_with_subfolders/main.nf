@@ -28,7 +28,8 @@ process MULTIQC_WITH_SUBFOLDERS {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ? "--filename ${task.ext.prefix}.html" : ''
+    def report_name = task.ext.prefix ?: 'multiqc_report'
+    def prefix = "--filename ${report_name}.html"
     def config = multiqc_config ? "--config $multiqc_config" : ''
     def extra_config = extra_multiqc_config ? "--config $extra_multiqc_config" : ''
     def logo = multiqc_logo ? "--cl-config 'custom_logo: \"${multiqc_logo}\"'" : ''
