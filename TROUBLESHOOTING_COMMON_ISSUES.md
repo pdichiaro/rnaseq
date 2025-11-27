@@ -82,23 +82,41 @@ DeepTools normalized BigWig files are missing from:
 
 ### Common Causes
 
-#### 1. Space in Normalization Method Parameter ⚠️ CRITICAL
+#### 1. Incorrect Normalization Method Parameter
 
-**Problem**: Including a space after the comma in the normalization method parameter.
+**Important**: The pipeline automatically trims whitespace, so **both formats work correctly**:
 
 ```bash
-# ❌ INCORRECT - Has space after comma
+# ✅ BOTH ARE CORRECT
+--normalization_method 'all_genes,invariant_genes'
 --normalization_method 'all_genes, invariant_genes'
 ```
 
-**Solution**: Remove the space after the comma.
+**Common Issues** that actually cause problems:
 
+**Problem A**: Typo in method names
 ```bash
-# ✅ CORRECT - No space
---normalization_method 'all_genes,invariant_genes'
+# ❌ WRONG - Typo
+--normalization_method 'all_genes, invarient_genes'  # "invarient" instead of "invariant"
 ```
 
-**Why this matters**: The space prevents proper parsing of the comma-separated list. The pipeline treats it as a single malformed value instead of two separate normalization methods.
+**Problem B**: Missing one of the methods
+```bash
+# ❌ WRONG - Only one method specified
+--normalization_method 'all_genes'  # Missing invariant_genes
+```
+
+**Problem C**: Invalid method name
+```bash
+# ❌ WRONG - Invalid method
+--normalization_method 'all_genes,housekeeping_genes'  # "housekeeping_genes" is not valid
+```
+
+**Solution**: Ensure both valid method names are specified correctly:
+```bash
+# ✅ CORRECT
+--normalization_method 'all_genes,invariant_genes'
+```
 
 #### 2. DESeq2 Normalization Not Completing
 

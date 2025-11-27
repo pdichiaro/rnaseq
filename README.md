@@ -53,12 +53,10 @@ nextflow run pdichiaro/rnaseq \
 
 **Use only:** ✅ `--outdir`
 
-**Comma-separated parameters** must have NO SPACES:
+**Comma-separated parameters** work with or without spaces (whitespace is automatically trimmed):
 ```bash
-# ✅ CORRECT
+# ✅ BOTH FORMATS WORK
 --normalization_method 'all_genes,invariant_genes'
-
-# ❌ WRONG
 --normalization_method 'all_genes, invariant_genes'
 ```
 

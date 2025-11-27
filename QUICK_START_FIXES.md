@@ -23,16 +23,19 @@
 
 **Symptom:** No files in `star/genome/deseq2/invariant_genes/deeptools_normalize/`
 
-**Cause:** Space after comma in normalization parameter
+**Cause:** The `--normalization_method` parameter requires both methods to be specified correctly
 
-**Fix:**
+**Note:** Both formats work (the pipeline trims whitespace automatically):
 ```bash
-# ❌ WRONG - Has space after comma
---normalization_method 'all_genes, invariant_genes'
-
-# ✅ CORRECT - No space
+# ✅ BOTH ARE CORRECT
 --normalization_method 'all_genes,invariant_genes'
+--normalization_method 'all_genes, invariant_genes'
 ```
+
+**Common Issues:**
+- Missing one of the methods
+- Typo in method names
+- Check your actual command to ensure both methods are specified
 
 ---
 
