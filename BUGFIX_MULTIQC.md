@@ -1,7 +1,8 @@
-# MultiQC Bug Fix
+# MultiQC Bug Fixes
 
-## Issue
-MultiQC was not running because of an incorrect conditional check in the workflow.
+## Issues Found and Fixed
+1. **Incorrect conditional check** preventing MultiQC from running
+2. **Missing publishDir directive** preventing MultiQC output from being saved
 
 ## Root Cause
 In `workflows/rnaseq/main.nf` line 1317, the MultiQC STAR condition was checking for invalid aligner values:
@@ -45,6 +46,35 @@ if (params.aligner == 'star') {
 - HISAT2 condition (line 1333) was already correct: `if (params.aligner == 'hisat2')`
 - Kallisto condition (line 1347) was already correct: `if (params.pseudo_aligner == 'kallisto')`
 - Legacy code still exists in `subworkflows/local/utils_nfcore_rnaseq_pipeline/main.nf` that references `'star_salmon'` and `'star_rsem'`, but this doesn't affect the main workflow execution
+
+---
+
+## Bug #2: Missing publishDir Directive
+
+### Issue
+Even if MultiQC ran successfully, the output files were not being published to the results directory.
+
+### Root Cause
+The `MULTIQC_WITH_SUBFOLDERS` process (used for MULTIQC_STAR, MULTIQC_HISAT2, and MULTIQC_KALLISTO) was missing a `publishDir` directive, so the generated MultiQC reports remained only in the work directory and were never copied to the results folder.
+
+### Fix Applied
+Added publishDir directive to the module:
+
+```groovy
+publishDir "${params.outdir}/multiqc", mode: params.publish_dir_mode, saveAs: { filename -> filename.equals('versions.yml') ? null : filename }
+```
+
+### Location
+- **File**: `modules/local/multiqc_with_subfolders/main.nf`
+- **Line**: 9 (after container definition)
+
+### Impact
+MultiQC reports will now be published to:
+- `${params.outdir}/multiqc/multiqc_report.html`
+- `${params.outdir}/multiqc/multiqc_data/`
+- `${params.outdir}/multiqc/multiqc_plots/` (if generated)
+
+---
 
 ## Date
 2025-11-30

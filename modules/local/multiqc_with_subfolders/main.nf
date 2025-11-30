@@ -6,6 +6,8 @@ process MULTIQC_WITH_SUBFOLDERS {
         'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/ef/eff0eafe78d5f3b65a6639265a16b89fdca88d06d18894f90fcdb50142004329/data' :
         'community.wave.seqera.io/library/multiqc:1.31--1efbafd542a23882' }"
 
+    publishDir "${params.outdir}/multiqc", mode: params.publish_dir_mode, saveAs: { filename -> filename.equals('versions.yml') ? null : filename }
+
     input:
     path  multiqc_files, stageAs: "?/*"
     path  star_files, stageAs: "star/*"
