@@ -1316,8 +1316,8 @@ workflow RNASEQ {
         // STAR MultiQC Report
         if (params.aligner == 'star') {
             MULTIQC_STAR (
-                ch_multiqc_shared.mix(ch_multiqc_star_files.flatten()).collect(),
-                Channel.empty(),  // No subfolders needed for individual reports
+                ch_multiqc_shared,
+                ch_multiqc_star_files.flatten().collect().ifEmpty([]),
                 Channel.empty(),
                 Channel.empty(),
                 ch_multiqc_config.toList(),
@@ -1332,9 +1332,9 @@ workflow RNASEQ {
         // HISAT2 MultiQC Report
         if (params.aligner == 'hisat2') {
             MULTIQC_HISAT2 (
-                ch_multiqc_shared.mix(ch_multiqc_hisat2_files.flatten()).collect(),
+                ch_multiqc_shared,
                 Channel.empty(),
-                Channel.empty(),
+                ch_multiqc_hisat2_files.flatten().collect().ifEmpty([]),
                 Channel.empty(),
                 ch_multiqc_config.toList(),
                 ch_multiqc_custom_config.toList(),
@@ -1348,10 +1348,10 @@ workflow RNASEQ {
         // Kallisto MultiQC Report
         if (params.pseudo_aligner == 'kallisto') {
             MULTIQC_KALLISTO (
-                ch_multiqc_shared.mix(ch_multiqc_kallisto_files.flatten()).collect(),
+                ch_multiqc_shared,
                 Channel.empty(),
                 Channel.empty(),
-                Channel.empty(),
+                ch_multiqc_kallisto_files.flatten().collect().ifEmpty([]),
                 ch_multiqc_config.toList(),
                 ch_multiqc_custom_config.toList(),
                 ch_multiqc_logo.toList(),
