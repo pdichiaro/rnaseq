@@ -1314,7 +1314,7 @@ workflow RNASEQ {
         ch_multiqc_report = Channel.empty()
         
         // STAR MultiQC Report
-        if (params.aligner && (params.aligner == 'star_salmon' || params.aligner == 'star_rsem' || params.aligner == 'star')) {
+        if (params.aligner == 'star') {
             MULTIQC_STAR (
                 ch_multiqc_shared.mix(ch_multiqc_star_files.flatten()).collect(),
                 Channel.empty(),  // No subfolders needed for individual reports
