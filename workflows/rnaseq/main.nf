@@ -421,7 +421,12 @@ workflow RNASEQ {
                     ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_RSEM.out.scaling_factors)
                     ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_RSEM.out.scaling_factors_individual)
                     ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_RSEM.out.scaling_factors_individual)
-                    ch_scaling_factors_individual_invariant = ch_scaling_factors_individual_invariant.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_RSEM.out.scaling_factors_individual)
+                    // Tag files with quantification method for downstream use
+                    ch_scaling_factors_individual_invariant = ch_scaling_factors_individual_invariant.mix(
+                        NORMALIZE_DESEQ2_QC_INVARIANT_GENES_RSEM.out.scaling_factors_individual
+                            .flatten()
+                            .map { file -> [file, 'rsem'] }
+                    )
                 }
                 
                 //
@@ -442,7 +447,12 @@ workflow RNASEQ {
                     ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_RSEM.out.scaling_factors)
                     ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_RSEM.out.scaling_factors_individual)
                     ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_RSEM.out.scaling_factors_individual)
-                    ch_scaling_factors_individual_all_genes = ch_scaling_factors_individual_all_genes.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_RSEM.out.scaling_factors_individual)
+                    // Tag files with quantification method for downstream use
+                    ch_scaling_factors_individual_all_genes = ch_scaling_factors_individual_all_genes.mix(
+                        NORMALIZE_DESEQ2_QC_ALL_GENES_RSEM.out.scaling_factors_individual
+                            .flatten()
+                            .map { file -> [file, 'rsem'] }
+                    )
                 }
                 
                 
@@ -514,7 +524,12 @@ workflow RNASEQ {
                     ch_normalization_scaling_factors_genome = ch_normalization_scaling_factors_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_GENOME.out.scaling_factors)
                     ch_normalization_scaling_factors_genome = ch_normalization_scaling_factors_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_GENOME.out.scaling_factors_individual)
                     ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_GENOME.out.scaling_factors_individual)
-                    ch_scaling_factors_individual_invariant = ch_scaling_factors_individual_invariant.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_GENOME.out.scaling_factors_individual)
+                    // Tag files with quantification method for downstream use
+                    ch_scaling_factors_individual_invariant = ch_scaling_factors_individual_invariant.mix(
+                        NORMALIZE_DESEQ2_QC_INVARIANT_GENES_GENOME.out.scaling_factors_individual
+                            .flatten()
+                            .map { file -> [file, 'genome'] }
+                    )
                 }
                 
                 
@@ -534,7 +549,12 @@ workflow RNASEQ {
                     ch_normalization_scaling_factors_genome = ch_normalization_scaling_factors_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_GENOME.out.scaling_factors)
                     ch_normalization_scaling_factors_genome = ch_normalization_scaling_factors_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_GENOME.out.scaling_factors_individual)
                     ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_GENOME.out.scaling_factors_individual)
-                    ch_scaling_factors_individual_all_genes = ch_scaling_factors_individual_all_genes.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_GENOME.out.scaling_factors_individual)
+                    // Tag files with quantification method for downstream use
+                    ch_scaling_factors_individual_all_genes = ch_scaling_factors_individual_all_genes.mix(
+                        NORMALIZE_DESEQ2_QC_ALL_GENES_GENOME.out.scaling_factors_individual
+                            .flatten()
+                            .map { file -> [file, 'genome'] }
+                    )
                 }
                 
                 
@@ -656,7 +676,12 @@ workflow RNASEQ {
                     ch_normalization_scaling_factors_hisat2 = ch_normalization_scaling_factors_hisat2.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors)
                     ch_normalization_scaling_factors_hisat2 = ch_normalization_scaling_factors_hisat2.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors_individual)
                     ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors_individual)
-                    ch_scaling_factors_individual_invariant = ch_scaling_factors_individual_invariant.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors_individual)
+                    // Tag files with quantification method for downstream use
+                    ch_scaling_factors_individual_invariant = ch_scaling_factors_individual_invariant.mix(
+                        NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors_individual
+                            .flatten()
+                            .map { file -> [file, 'genome'] }
+                    )
                 }
                 
                 
@@ -676,7 +701,12 @@ workflow RNASEQ {
                     ch_normalization_scaling_factors_hisat2 = ch_normalization_scaling_factors_hisat2.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors)
                     ch_normalization_scaling_factors_hisat2 = ch_normalization_scaling_factors_hisat2.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors_individual)
                     ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors_individual)
-                    ch_scaling_factors_individual_all_genes = ch_scaling_factors_individual_all_genes.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors_individual)
+                    // Tag files with quantification method for downstream use
+                    ch_scaling_factors_individual_all_genes = ch_scaling_factors_individual_all_genes.mix(
+                        NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors_individual
+                            .flatten()
+                            .map { file -> [file, 'genome'] }
+                    )
                 }
                 
                 
@@ -1058,7 +1088,12 @@ workflow RNASEQ {
                 ch_normalization_scaling_factors_pseudo = ch_normalization_scaling_factors_pseudo.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.scaling_factors)
                 ch_normalization_scaling_factors_pseudo = ch_normalization_scaling_factors_pseudo.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.scaling_factors_individual)
                 ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.scaling_factors_individual)
-                ch_scaling_factors_individual_invariant = ch_scaling_factors_individual_invariant.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.scaling_factors_individual)
+                // Tag files with quantification method for downstream use (salmon or kallisto)
+                ch_scaling_factors_individual_invariant = ch_scaling_factors_individual_invariant.mix(
+                    NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.scaling_factors_individual
+                        .flatten()
+                        .map { file -> [file, pseudo_quantifier.toLowerCase()] }
+                )
             }
             
             
@@ -1078,7 +1113,12 @@ workflow RNASEQ {
                 ch_normalization_scaling_factors_pseudo = ch_normalization_scaling_factors_pseudo.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.scaling_factors)
                 ch_normalization_scaling_factors_pseudo = ch_normalization_scaling_factors_pseudo.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.scaling_factors_individual)
                 ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.scaling_factors_individual)
-                ch_scaling_factors_individual_all_genes = ch_scaling_factors_individual_all_genes.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.scaling_factors_individual)
+                // Tag files with quantification method for downstream use (salmon or kallisto)
+                ch_scaling_factors_individual_all_genes = ch_scaling_factors_individual_all_genes.mix(
+                    NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.scaling_factors_individual
+                        .flatten()
+                        .map { file -> [file, pseudo_quantifier.toLowerCase()] }
+                )
             }
             
             
@@ -1121,29 +1161,10 @@ workflow RNASEQ {
             // Extract sample name, scaling value, and quantification method as tuple: [sample_name, scaling_value, quant_method]
             //
             ch_scaling_per_sample_invariant = ch_scaling_factors_individual_invariant
-                .flatten()
-                .map { file ->
+                .map { file, quant_method ->
+                    // Channel already contains [file, quant_method] tuples from source
                     def sample_name = file.name.replaceAll('_scaling_factor\\.txt$', '')
                     def scaling_value = file.text.trim()
-                    // Detect quantification method from file path with improved fallback logic
-                    def file_path = file.toString()
-                    def quant_method = 'unknown'
-                    
-                    // Check for quantification method in path
-                    if (file_path.contains('/rsem/')) {
-                        quant_method = 'rsem'
-                    } else if (file_path.contains('/genome/')) {
-                        quant_method = 'genome'
-                    } else if (file_path.contains('/salmon/')) {
-                        quant_method = 'salmon'
-                    } else if (file_path.contains('/kallisto/')) {
-                        quant_method = 'kallisto'
-                    } else {
-                        // Fallback to params.quantification if path detection fails
-                        quant_method = params.quantification ?: 'genome'
-                        log.warn "INVARIANT_GENES: Could not detect quantification method from path: ${file_path}"
-                        log.warn "INVARIANT_GENES: Using fallback: ${quant_method}"
-                    }
                     
                     [sample_name, scaling_value, quant_method]
                 }
@@ -1187,29 +1208,10 @@ workflow RNASEQ {
             // Extract sample name, scaling value, and quantification method as tuple: [sample_name, scaling_value, quant_method]
             //
             ch_scaling_per_sample_all_genes = ch_scaling_factors_individual_all_genes
-                .flatten()
-                .map { file ->
+                .map { file, quant_method ->
+                    // Channel already contains [file, quant_method] tuples from source
                     def sample_name = file.name.replaceAll('_scaling_factor\\.txt$', '')
                     def scaling_value = file.text.trim()
-                    // Detect quantification method from file path with improved fallback logic
-                    def file_path = file.toString()
-                    def quant_method = 'unknown'
-                    
-                    // Check for quantification method in path
-                    if (file_path.contains('/rsem/')) {
-                        quant_method = 'rsem'
-                    } else if (file_path.contains('/genome/')) {
-                        quant_method = 'genome'
-                    } else if (file_path.contains('/salmon/')) {
-                        quant_method = 'salmon'
-                    } else if (file_path.contains('/kallisto/')) {
-                        quant_method = 'kallisto'
-                    } else {
-                        // Fallback to params.quantification if path detection fails
-                        quant_method = params.quantification ?: 'genome'
-                        log.warn "ALL_GENES: Could not detect quantification method from path: ${file_path}"
-                        log.warn "ALL_GENES: Using fallback: ${quant_method}"
-                    }
                     
                     [sample_name, scaling_value, quant_method]
                 }
