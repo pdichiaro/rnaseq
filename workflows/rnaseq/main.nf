@@ -213,6 +213,8 @@ workflow RNASEQ {
     ch_percent_mapped = Channel.empty()
     ch_scaling_factors = Channel.empty()
     ch_scaling_factors_individual = Channel.empty()
+    ch_scaling_factors_individual_invariant = Channel.empty()
+    ch_scaling_factors_individual_all_genes = Channel.empty()
 
     //
     //
@@ -419,6 +421,7 @@ workflow RNASEQ {
                     ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_RSEM.out.scaling_factors)
                     ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_RSEM.out.scaling_factors_individual)
                     ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_RSEM.out.scaling_factors_individual)
+                    ch_scaling_factors_individual_invariant = ch_scaling_factors_individual_invariant.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_RSEM.out.scaling_factors_individual)
                 }
                 
                 //
@@ -439,6 +442,7 @@ workflow RNASEQ {
                     ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_RSEM.out.scaling_factors)
                     ch_normalization_scaling_factors = ch_normalization_scaling_factors.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_RSEM.out.scaling_factors_individual)
                     ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_RSEM.out.scaling_factors_individual)
+                    ch_scaling_factors_individual_all_genes = ch_scaling_factors_individual_all_genes.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_RSEM.out.scaling_factors_individual)
                 }
                 
                 
@@ -510,6 +514,7 @@ workflow RNASEQ {
                     ch_normalization_scaling_factors_genome = ch_normalization_scaling_factors_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_GENOME.out.scaling_factors)
                     ch_normalization_scaling_factors_genome = ch_normalization_scaling_factors_genome.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_GENOME.out.scaling_factors_individual)
                     ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_GENOME.out.scaling_factors_individual)
+                    ch_scaling_factors_individual_invariant = ch_scaling_factors_individual_invariant.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_GENOME.out.scaling_factors_individual)
                 }
                 
                 
@@ -529,6 +534,7 @@ workflow RNASEQ {
                     ch_normalization_scaling_factors_genome = ch_normalization_scaling_factors_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_GENOME.out.scaling_factors)
                     ch_normalization_scaling_factors_genome = ch_normalization_scaling_factors_genome.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_GENOME.out.scaling_factors_individual)
                     ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_GENOME.out.scaling_factors_individual)
+                    ch_scaling_factors_individual_all_genes = ch_scaling_factors_individual_all_genes.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_GENOME.out.scaling_factors_individual)
                 }
                 
                 
@@ -650,6 +656,7 @@ workflow RNASEQ {
                     ch_normalization_scaling_factors_hisat2 = ch_normalization_scaling_factors_hisat2.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors)
                     ch_normalization_scaling_factors_hisat2 = ch_normalization_scaling_factors_hisat2.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors_individual)
                     ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors_individual)
+                    ch_scaling_factors_individual_invariant = ch_scaling_factors_individual_invariant.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_ALIGNMENT.out.scaling_factors_individual)
                 }
                 
                 
@@ -669,6 +676,7 @@ workflow RNASEQ {
                     ch_normalization_scaling_factors_hisat2 = ch_normalization_scaling_factors_hisat2.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors)
                     ch_normalization_scaling_factors_hisat2 = ch_normalization_scaling_factors_hisat2.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors_individual)
                     ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors_individual)
+                    ch_scaling_factors_individual_all_genes = ch_scaling_factors_individual_all_genes.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_ALIGNMENT.out.scaling_factors_individual)
                 }
                 
                 
@@ -1050,6 +1058,7 @@ workflow RNASEQ {
                 ch_normalization_scaling_factors_pseudo = ch_normalization_scaling_factors_pseudo.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.scaling_factors)
                 ch_normalization_scaling_factors_pseudo = ch_normalization_scaling_factors_pseudo.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.scaling_factors_individual)
                 ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.scaling_factors_individual)
+                ch_scaling_factors_individual_invariant = ch_scaling_factors_individual_invariant.mix(NORMALIZE_DESEQ2_QC_INVARIANT_GENES_PSEUDO.out.scaling_factors_individual)
             }
             
             
@@ -1069,6 +1078,7 @@ workflow RNASEQ {
                 ch_normalization_scaling_factors_pseudo = ch_normalization_scaling_factors_pseudo.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.scaling_factors)
                 ch_normalization_scaling_factors_pseudo = ch_normalization_scaling_factors_pseudo.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.scaling_factors_individual)
                 ch_scaling_factors_individual = ch_scaling_factors_individual.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.scaling_factors_individual)
+                ch_scaling_factors_individual_all_genes = ch_scaling_factors_individual_all_genes.mix(NORMALIZE_DESEQ2_QC_ALL_GENES_PSEUDO.out.scaling_factors_individual)
             }
             
             
@@ -1107,16 +1117,11 @@ workflow RNASEQ {
         if (normalization_methods.contains('invariant_genes')) {
             //
             // CHANNEL OPERATION: Extract scaling factors from invariant genes normalization
-            // Read individual *_scaling_factor.txt files, filter by 'invariant' directory
+            // Use dedicated invariant genes channel instead of filtering mixed channel
             // Extract sample name, scaling value, and quantification method as tuple: [sample_name, scaling_value, quant_method]
             //
-            ch_scaling_per_sample_invariant = ch_scaling_factors_individual
+            ch_scaling_per_sample_invariant = ch_scaling_factors_individual_invariant
                 .flatten()
-                .filter { file ->
-                    def parent_dir = file.getParent()?.getName() ?: ""
-                    def grandparent_dir = file.getParent()?.getParent()?.getName() ?: ""
-                    parent_dir.contains('invariant') || grandparent_dir.contains('invariant')
-                }
                 .map { file ->
                     def sample_name = file.name.replaceAll('_scaling_factor\\.txt$', '')
                     def scaling_value = file.text.trim()
@@ -1178,16 +1183,11 @@ workflow RNASEQ {
         if (normalization_methods.contains('all_genes') || (!normalization_methods.contains('invariant_genes') && !normalization_methods.contains('all_genes'))) {
             //
             // CHANNEL OPERATION: Extract scaling factors from all genes normalization
-            // Read individual *_scaling_factor.txt files, exclude 'invariant' directory
+            // Use dedicated all genes channel instead of filtering mixed channel
             // Extract sample name, scaling value, and quantification method as tuple: [sample_name, scaling_value, quant_method]
             //
-            ch_scaling_per_sample_all_genes = ch_scaling_factors_individual
+            ch_scaling_per_sample_all_genes = ch_scaling_factors_individual_all_genes
                 .flatten()
-                .filter { file ->
-                    def parent_dir = file.getParent()?.getName() ?: ""
-                    def grandparent_dir = file.getParent()?.getParent()?.getName() ?: ""
-                    !(parent_dir.contains('invariant') || grandparent_dir.contains('invariant'))
-                }
                 .map { file ->
                     def sample_name = file.name.replaceAll('_scaling_factor\\.txt$', '')
                     def scaling_value = file.text.trim()
