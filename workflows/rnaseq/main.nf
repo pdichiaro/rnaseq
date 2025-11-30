@@ -73,10 +73,9 @@ include { SUBREAD_FEATURECOUNTS as SUBREAD_FEATURECOUNTS_EXTRA } from '../../mod
 include { KRAKEN2_KRAKEN2 as KRAKEN2 } from '../../modules/nf-core/kraken2/kraken2/main'
 include { BRACKEN_BRACKEN as BRACKEN } from '../../modules/nf-core/bracken/bracken/main'
 include { MULTIQC                    } from '../../modules/nf-core/multiqc'
-include { MULTIQC_WITH_SUBFOLDERS    } from '../../modules/local/multiqc_with_subfolders'
-include { MULTIQC_WITH_SUBFOLDERS as MULTIQC_STAR } from '../../modules/local/multiqc_with_subfolders'
-include { MULTIQC_WITH_SUBFOLDERS as MULTIQC_HISAT2 } from '../../modules/local/multiqc_with_subfolders'
-include { MULTIQC_WITH_SUBFOLDERS as MULTIQC_KALLISTO } from '../../modules/local/multiqc_with_subfolders'
+include { MULTIQC as MULTIQC_STAR    } from '../../modules/nf-core/multiqc'
+include { MULTIQC as MULTIQC_HISAT2  } from '../../modules/nf-core/multiqc'
+include { MULTIQC as MULTIQC_KALLISTO } from '../../modules/nf-core/multiqc'
 include { BEDTOOLS_GENOMECOV as BEDTOOLS_GENOMECOV_FW          } from '../../modules/nf-core/bedtools/genomecov'
 include { BEDTOOLS_GENOMECOV as BEDTOOLS_GENOMECOV_REV         } from '../../modules/nf-core/bedtools/genomecov'
 include { BEDTOOLS_GENOMECOV as BEDTOOLS_GENOMECOV_UNSTRANDED  } from '../../modules/nf-core/bedtools/genomecov'
@@ -1305,10 +1304,8 @@ workflow RNASEQ {
             .ifEmpty([])
 
         // Generate separate MultiQC reports for each aligner/pseudo-aligner
-        // Each report gets its own dedicated channel mixing shared QC + aligner-specific QC
-        
-        // Prepare shared QC files that go in all reports
-        ch_multiqc_shared = ch_multiqc_files.flatten().collect().ifEmpty([])
+        // Each report combines shared QC files with aligner-specific files
+        // Using standard nf-core MULTIQC module for compatibility
         
         // Initialize report channel
         ch_multiqc_report = Channel.empty()
@@ -1316,14 +1313,11 @@ workflow RNASEQ {
         // STAR MultiQC Report
         if (params.aligner == 'star') {
             MULTIQC_STAR (
-                ch_multiqc_shared.ifEmpty([]),
-                ch_multiqc_star_files.flatten().collect().ifEmpty([]),
-                [],  // Empty list for hisat2_files
-                [],  // Empty list for kallisto_files
+                ch_multiqc_files.mix(ch_multiqc_star_files).collect(),
                 ch_multiqc_config.toList(),
                 ch_multiqc_custom_config.toList(),
                 ch_multiqc_logo.toList(),
-                ch_name_replacements.ifEmpty([]),
+                ch_name_replacements,
                 []
             )
             ch_multiqc_report = ch_multiqc_report.mix(MULTIQC_STAR.out.report)
@@ -1332,14 +1326,11 @@ workflow RNASEQ {
         // HISAT2 MultiQC Report
         if (params.aligner == 'hisat2') {
             MULTIQC_HISAT2 (
-                ch_multiqc_shared.ifEmpty([]),
-                [],  // Empty list for star_files
-                ch_multiqc_hisat2_files.flatten().collect().ifEmpty([]),
-                [],  // Empty list for kallisto_files
+                ch_multiqc_files.mix(ch_multiqc_hisat2_files).collect(),
                 ch_multiqc_config.toList(),
                 ch_multiqc_custom_config.toList(),
                 ch_multiqc_logo.toList(),
-                ch_name_replacements.ifEmpty([]),
+                ch_name_replacements,
                 []
             )
             ch_multiqc_report = ch_multiqc_report.mix(MULTIQC_HISAT2.out.report)
@@ -1348,14 +1339,11 @@ workflow RNASEQ {
         // Kallisto MultiQC Report
         if (params.pseudo_aligner == 'kallisto') {
             MULTIQC_KALLISTO (
-                ch_multiqc_shared.ifEmpty([]),
-                [],  // Empty list for star_files
-                [],  // Empty list for hisat2_files
-                ch_multiqc_kallisto_files.flatten().collect().ifEmpty([]),
+                ch_multiqc_files.mix(ch_multiqc_kallisto_files).collect(),
                 ch_multiqc_config.toList(),
                 ch_multiqc_custom_config.toList(),
                 ch_multiqc_logo.toList(),
-                ch_name_replacements.ifEmpty([]),
+                ch_name_replacements,
                 []
             )
             ch_multiqc_report = ch_multiqc_report.mix(MULTIQC_KALLISTO.out.report)
