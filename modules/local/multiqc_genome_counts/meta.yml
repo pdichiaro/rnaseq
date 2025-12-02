@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "multiqc_genome_counts"
+description: Format genome count summary files for MultiQC custom content
+keywords:
+  - genomics
+  - qc
+  - genome
+  - counts
+  - multiqc
+tools:
+  - custom:
+      description: |
+        Custom Python script to format genome count summaries for MultiQC.
+        Generates custom content showing read distribution across genomic features
+        (exons, introns, UTRs) and genes detected per feature type.
+
+input:
+  - summary_files:
+      type: file
+      description: |
+        Genome count summary files from GENOME_COUNT process.
+        Expected format: tab-separated with columns:
+        sample_id, feature_type, total_reads, genes_with_reads
+      pattern: "*_summary.txt"
+
+output:
+  - mqc:
+      type: file
+      description: MultiQC custom content files (TSV format)
+      pattern: "*_mqc.tsv"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+
+authors:
+  - "@pdichiaro"
+
+maintainers:
+  - "@pdichiaro"

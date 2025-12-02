@@ -24,6 +24,8 @@ include { DESEQ2_SECTION_HEADER as DESEQ2_SECTION_HEADER_STAR_GENOME } from '../
 include { DESEQ2_SECTION_HEADER as DESEQ2_SECTION_HEADER_HISAT2      } from '../../modules/local/deseq2_section_header'
 include { DESEQ2_SECTION_HEADER as DESEQ2_SECTION_HEADER_PSEUDO      } from '../../modules/local/deseq2_section_header'
 include { MULTIQC_CUSTOM_BIOTYPE             } from '../../modules/local/multiqc_custom_biotype'
+include { MULTIQC_GENOME_COUNTS              } from '../../modules/local/multiqc_genome_counts'
+include { MULTIQC_GENOME_COUNTS as MULTIQC_GENOME_COUNTS_HISAT2 } from '../../modules/local/multiqc_genome_counts'
 include { GENOME_COUNT                       } from '../../modules/local/genome_count'
 include { MERGE_GENOME_COUNTS                } from '../../modules/local/merge_genome_counts'
 include { MERGE_GENOME_COUNTS as MERGE_GENOME_COUNTS_HISAT2 } from '../../modules/local/merge_genome_counts'
@@ -496,6 +498,13 @@ workflow RNASEQ {
             )
             ch_versions = ch_versions.mix(MERGE_GENOME_COUNTS.out.versions)
 
+            // Generate MultiQC custom content for genome counts (STAR)
+            MULTIQC_GENOME_COUNTS (
+                GENOME_COUNT.out.summary.map { meta, summary -> summary }.collect()
+            )
+            ch_multiqc_files = ch_multiqc_files.mix(MULTIQC_GENOME_COUNTS.out.mqc.flatten())
+            ch_versions = ch_versions.mix(MULTIQC_GENOME_COUNTS.out.versions.first())
+
             if (!params.skip_qc & !params.skip_deseq2_qc) {
                 
                 def normalization_methods = params.normalization_method instanceof List ? 
@@ -647,6 +656,13 @@ workflow RNASEQ {
                 ch_annotation_matrix
             )
             ch_versions = ch_versions.mix(MERGE_GENOME_COUNTS_HISAT2.out.versions)
+
+            // Generate MultiQC custom content for genome counts (HISAT2)
+            MULTIQC_GENOME_COUNTS_HISAT2 (
+                GENOME_COUNT.out.summary.map { meta, summary -> summary }.collect()
+            )
+            ch_multiqc_files = ch_multiqc_files.mix(MULTIQC_GENOME_COUNTS_HISAT2.out.mqc.flatten())
+            ch_versions = ch_versions.mix(MULTIQC_GENOME_COUNTS_HISAT2.out.versions.first())
 
             if (!params.skip_qc & !params.skip_deseq2_qc) {
                 
