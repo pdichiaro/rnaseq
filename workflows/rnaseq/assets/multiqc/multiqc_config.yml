@@ -197,6 +197,13 @@ sp:
     skip: true
 
   # DESeq2 custom content is now handled via headers added by DESEQ2_TRANSFORM module
+# Genome counts custom content patterns
+  genome_counts_generalstats:
+    fn: "*_generalstats_mqc.tsv"
+  genome_counts_distribution:
+    fn: "*_distribution_mqc.tsv"
+  genome_counts_genes:
+    fn: "*_genes_mqc.tsv"
 
 fn_ignore_files:
   - "*umi_dedup.transcriptome.sorted.log"
