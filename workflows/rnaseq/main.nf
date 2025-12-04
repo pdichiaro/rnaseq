@@ -503,6 +503,7 @@ workflow RNASEQ {
                 GENOME_COUNT.out.summary.map { meta, summary -> summary }.collect()
             )
             ch_multiqc_files = ch_multiqc_files.mix(MULTIQC_GENOME_COUNTS.out.mqc.flatten())
+            ch_multiqc_star_files = ch_multiqc_star_files.mix(MULTIQC_GENOME_COUNTS.out.mqc.flatten())
             ch_versions = ch_versions.mix(MULTIQC_GENOME_COUNTS.out.versions.first())
 
             if (!params.skip_qc & !params.skip_deseq2_qc) {
@@ -662,6 +663,7 @@ workflow RNASEQ {
                 GENOME_COUNT.out.summary.map { meta, summary -> summary }.collect()
             )
             ch_multiqc_files = ch_multiqc_files.mix(MULTIQC_GENOME_COUNTS_HISAT2.out.mqc.flatten())
+            ch_multiqc_hisat2_files = ch_multiqc_hisat2_files.mix(MULTIQC_GENOME_COUNTS_HISAT2.out.mqc.flatten())
             ch_versions = ch_versions.mix(MULTIQC_GENOME_COUNTS_HISAT2.out.versions.first())
 
             if (!params.skip_qc & !params.skip_deseq2_qc) {
@@ -1353,7 +1355,7 @@ workflow RNASEQ {
         }
         
         // Kallisto MultiQC Report
-        if (params.pseudo_aligner == 'kallisto') {
+        if (!params.skip_pseudo_alignment && params.pseudo_aligner == 'kallisto') {
             MULTIQC_KALLISTO (
                 ch_multiqc_files.mix(ch_multiqc_kallisto_files).collect(),
                 ch_multiqc_config.toList(),
@@ -1365,30 +1367,6 @@ workflow RNASEQ {
             ch_multiqc_report = ch_multiqc_report.mix(MULTIQC_KALLISTO.out.report)
         }
 
-        // Main combined MultiQC Report
-        // Combines all QC files including aligner-specific ones
-        def multiqc_input_files = ch_multiqc_files.collect()
-        
-        // Add aligner-specific files based on what's configured
-        if (params.aligner == 'star') {
-            multiqc_input_files = multiqc_input_files.mix(ch_multiqc_star_files.collect())
-        }
-        if (params.aligner == 'hisat2') {
-            multiqc_input_files = multiqc_input_files.mix(ch_multiqc_hisat2_files.collect())
-        }
-        if (params.pseudo_aligner == 'kallisto') {
-            multiqc_input_files = multiqc_input_files.mix(ch_multiqc_kallisto_files.collect())
-        }
-        
-        MULTIQC (
-            multiqc_input_files.collect(),
-            ch_multiqc_config.toList(),
-            ch_multiqc_custom_config.toList(),
-            ch_multiqc_logo.toList(),
-            ch_name_replacements,
-            []
-        )
-        ch_multiqc_report = ch_multiqc_report.mix(MULTIQC.out.report)
     }
 
     //
