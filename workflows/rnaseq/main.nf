@@ -1331,7 +1331,7 @@ workflow RNASEQ {
         // STAR MultiQC Report
         if (params.aligner == 'star') {
             MULTIQC_STAR (
-                ch_multiqc_files.mix(ch_multiqc_star_files).collect(),
+                ch_multiqc_files.mix(ch_multiqc_star_files).mix(ch_multiqc_star_quant).collect(),
                 ch_multiqc_config.toList(),
                 ch_multiqc_custom_config.toList(),
                 ch_multiqc_logo.toList(),
@@ -1344,7 +1344,7 @@ workflow RNASEQ {
         // HISAT2 MultiQC Report
         if (params.aligner == 'hisat2') {
             MULTIQC_HISAT2 (
-                ch_multiqc_files.mix(ch_multiqc_hisat2_files).collect(),
+                ch_multiqc_files.mix(ch_multiqc_hisat2_files).mix(ch_multiqc_hisat2_quant).collect(),
                 ch_multiqc_config.toList(),
                 ch_multiqc_custom_config.toList(),
                 ch_multiqc_logo.toList(),
