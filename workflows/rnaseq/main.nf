@@ -1142,7 +1142,7 @@ workflow RNASEQ {
             DESEQ2_SECTION_HEADER_PSEUDO (
                 params.pseudo_aligner
             )
-            ch_multiqc_files = ch_multiqc_files.mix(DESEQ2_SECTION_HEADER_PSEUDO.out.section_header)
+            ch_multiqc_kallisto_files = ch_multiqc_kallisto_files.mix(DESEQ2_SECTION_HEADER_PSEUDO.out.section_header)
             ch_versions = ch_versions.mix(DESEQ2_SECTION_HEADER_PSEUDO.out.versions)
             
             
@@ -1152,7 +1152,7 @@ workflow RNASEQ {
                 ch_deseq2_clustering_header,
                 ch_deseq2_read_dist_header
             )
-            ch_multiqc_files = ch_multiqc_files.mix(DESEQ2_TRANSFORM_PSEUDO.out.multiqc_files)
+            ch_multiqc_kallisto_files = ch_multiqc_kallisto_files.mix(DESEQ2_TRANSFORM_PSEUDO.out.multiqc_files)
             
             ch_versions = ch_versions.mix(DESEQ2_TRANSFORM_PSEUDO.out.versions.first())
             ch_versions = ch_versions.mix(ch_normalization_versions_pseudo)
