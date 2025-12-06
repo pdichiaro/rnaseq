@@ -23,6 +23,8 @@ include { DESEQ2_SECTION_HEADER                                       } from '..
 include { DESEQ2_SECTION_HEADER as DESEQ2_SECTION_HEADER_STAR_GENOME } from '../../modules/local/deseq2_section_header'
 include { DESEQ2_SECTION_HEADER as DESEQ2_SECTION_HEADER_HISAT2      } from '../../modules/local/deseq2_section_header'
 include { DESEQ2_SECTION_HEADER as DESEQ2_SECTION_HEADER_PSEUDO      } from '../../modules/local/deseq2_section_header'
+include { GENOME_SECTION_HEADER                                       } from '../../modules/local/genome_section_header'
+include { GENOME_SECTION_HEADER as GENOME_SECTION_HEADER_HISAT2      } from '../../modules/local/genome_section_header'
 include { MULTIQC_CUSTOM_BIOTYPE             } from '../../modules/local/multiqc_custom_biotype'
 include { MULTIQC_GENOME_COUNTS              } from '../../modules/local/multiqc_genome_counts'
 include { MULTIQC_GENOME_COUNTS as MULTIQC_GENOME_COUNTS_HISAT2 } from '../../modules/local/multiqc_genome_counts'
@@ -495,14 +497,6 @@ workflow RNASEQ {
             )
             ch_versions = ch_versions.mix(MERGE_GENOME_COUNTS.out.versions)
 
-            // Generate MultiQC custom content for genome counts (STAR)
-            MULTIQC_GENOME_COUNTS (
-                GENOME_COUNT.out.summary.map { meta, summary -> summary }.collect()
-            )
-            ch_multiqc_files = ch_multiqc_files.mix(MULTIQC_GENOME_COUNTS.out.mqc.flatten())
-            ch_multiqc_star_files = ch_multiqc_star_files.mix(MULTIQC_GENOME_COUNTS.out.mqc.flatten())
-            ch_versions = ch_versions.mix(MULTIQC_GENOME_COUNTS.out.versions.first())
-
             if (!params.skip_qc & !params.skip_deseq2_qc) {
                 
                 def normalization_methods = params.normalization_method instanceof List ? 
@@ -585,6 +579,22 @@ workflow RNASEQ {
                 ch_versions = ch_versions.mix(ch_normalization_versions_genome)
                 ch_versions = ch_versions.mix(DESEQ2_TRANSFORM_STAR_GENOME.out.versions.first())
                 ch_scaling_factors = ch_scaling_factors.mix(ch_normalization_scaling_factors_genome)            }
+            
+            // Add Genome section header for MultiQC (after DESeq2 so it appears before DESeq2 in report)
+            GENOME_SECTION_HEADER (
+                "star"
+            )
+            ch_multiqc_files = ch_multiqc_files.mix(GENOME_SECTION_HEADER.out.section_header)
+            ch_multiqc_star_files = ch_multiqc_star_files.mix(GENOME_SECTION_HEADER.out.section_header)
+            ch_versions = ch_versions.mix(GENOME_SECTION_HEADER.out.versions)
+
+            // Generate MultiQC custom content for genome counts (STAR)
+            MULTIQC_GENOME_COUNTS (
+                GENOME_COUNT.out.summary.map { meta, summary -> summary }.collect()
+            )
+            ch_multiqc_files = ch_multiqc_files.mix(MULTIQC_GENOME_COUNTS.out.mqc.flatten())
+            ch_multiqc_star_files = ch_multiqc_star_files.mix(MULTIQC_GENOME_COUNTS.out.mqc.flatten())
+            ch_versions = ch_versions.mix(MULTIQC_GENOME_COUNTS.out.versions.first())
         }
     }
 
@@ -654,14 +664,6 @@ workflow RNASEQ {
                 ch_annotation_matrix
             )
             ch_versions = ch_versions.mix(MERGE_GENOME_COUNTS_HISAT2.out.versions)
-
-            // Generate MultiQC custom content for genome counts (HISAT2)
-            MULTIQC_GENOME_COUNTS_HISAT2 (
-                GENOME_COUNT.out.summary.map { meta, summary -> summary }.collect()
-            )
-            ch_multiqc_files = ch_multiqc_files.mix(MULTIQC_GENOME_COUNTS_HISAT2.out.mqc.flatten())
-            ch_multiqc_hisat2_files = ch_multiqc_hisat2_files.mix(MULTIQC_GENOME_COUNTS_HISAT2.out.mqc.flatten())
-            ch_versions = ch_versions.mix(MULTIQC_GENOME_COUNTS_HISAT2.out.versions.first())
 
             if (!params.skip_qc & !params.skip_deseq2_qc) {
                 
@@ -745,6 +747,22 @@ workflow RNASEQ {
                 
                 ch_versions = ch_versions.mix(ch_normalization_versions_hisat2)
                 ch_scaling_factors = ch_scaling_factors.mix(ch_normalization_scaling_factors_hisat2)            }
+            
+            // Add Genome section header for MultiQC (after DESeq2 so it appears before DESeq2 in report)
+            GENOME_SECTION_HEADER_HISAT2 (
+                "hisat2"
+            )
+            ch_multiqc_files = ch_multiqc_files.mix(GENOME_SECTION_HEADER_HISAT2.out.section_header)
+            ch_multiqc_hisat2_files = ch_multiqc_hisat2_files.mix(GENOME_SECTION_HEADER_HISAT2.out.section_header)
+            ch_versions = ch_versions.mix(GENOME_SECTION_HEADER_HISAT2.out.versions)
+
+            // Generate MultiQC custom content for genome counts (HISAT2)
+            MULTIQC_GENOME_COUNTS_HISAT2 (
+                GENOME_COUNT.out.summary.map { meta, summary -> summary }.collect()
+            )
+            ch_multiqc_files = ch_multiqc_files.mix(MULTIQC_GENOME_COUNTS_HISAT2.out.mqc.flatten())
+            ch_multiqc_hisat2_files = ch_multiqc_hisat2_files.mix(MULTIQC_GENOME_COUNTS_HISAT2.out.mqc.flatten())
+            ch_versions = ch_versions.mix(MULTIQC_GENOME_COUNTS_HISAT2.out.versions.first())
         }
     }
 
