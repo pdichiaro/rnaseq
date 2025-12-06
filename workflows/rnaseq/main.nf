@@ -75,9 +75,6 @@ include { SUBREAD_FEATURECOUNTS as SUBREAD_FEATURECOUNTS_EXTRA } from '../../mod
 include { KRAKEN2_KRAKEN2 as KRAKEN2 } from '../../modules/nf-core/kraken2/kraken2/main'
 include { BRACKEN_BRACKEN as BRACKEN } from '../../modules/nf-core/bracken/bracken/main'
 include { MULTIQC                    } from '../../modules/nf-core/multiqc'
-include { MULTIQC as MULTIQC_STAR    } from '../../modules/nf-core/multiqc'
-include { MULTIQC as MULTIQC_HISAT2  } from '../../modules/nf-core/multiqc'
-include { MULTIQC as MULTIQC_KALLISTO } from '../../modules/nf-core/multiqc'
 include { BEDTOOLS_GENOMECOV as BEDTOOLS_GENOMECOV_FW          } from '../../modules/nf-core/bedtools/genomecov'
 include { BEDTOOLS_GENOMECOV as BEDTOOLS_GENOMECOV_REV         } from '../../modules/nf-core/bedtools/genomecov'
 include { BEDTOOLS_GENOMECOV as BEDTOOLS_GENOMECOV_UNSTRANDED  } from '../../modules/nf-core/bedtools/genomecov'
@@ -1321,51 +1318,17 @@ workflow RNASEQ {
             .collectFile(name: 'name_replacement.txt', newLine: true)
             .ifEmpty([])
 
-        // Generate separate MultiQC reports for each aligner/pseudo-aligner
-        // Each report combines shared QC files with aligner-specific files
-        // Using standard nf-core MULTIQC module for compatibility
-        
-        // Initialize report channel
-        ch_multiqc_report = Channel.empty()
-        
-        // STAR MultiQC Report
-        if (params.aligner == 'star') {
-            MULTIQC_STAR (
-                ch_multiqc_files.mix(ch_multiqc_star_files).mix(ch_multiqc_star_quant).collect(),
-                ch_multiqc_config.toList(),
-                ch_multiqc_custom_config.toList(),
-                ch_multiqc_logo.toList(),
-                ch_name_replacements,
-                []
-            )
-            ch_multiqc_report = ch_multiqc_report.mix(MULTIQC_STAR.out.report)
-        }
-        
-        // HISAT2 MultiQC Report
-        if (params.aligner == 'hisat2') {
-            MULTIQC_HISAT2 (
-                ch_multiqc_files.mix(ch_multiqc_hisat2_files).mix(ch_multiqc_hisat2_quant).collect(),
-                ch_multiqc_config.toList(),
-                ch_multiqc_custom_config.toList(),
-                ch_multiqc_logo.toList(),
-                ch_name_replacements,
-                []
-            )
-            ch_multiqc_report = ch_multiqc_report.mix(MULTIQC_HISAT2.out.report)
-        }
-        
-        // Kallisto MultiQC Report
-        if (!params.skip_pseudo_alignment && params.pseudo_aligner == 'kallisto') {
-            MULTIQC_KALLISTO (
-                ch_multiqc_files.mix(ch_multiqc_kallisto_files).collect(),
-                ch_multiqc_config.toList(),
-                ch_multiqc_custom_config.toList(),
-                ch_multiqc_logo.toList(),
-                ch_name_replacements,
-                []
-            )
-            ch_multiqc_report = ch_multiqc_report.mix(MULTIQC_KALLISTO.out.report)
-        }
+        // Generate comprehensive MultiQC report combining all QC files
+        // Collects files from all aligners and tools used in the workflow
+        MULTIQC (
+            ch_multiqc_files.mix(ch_multiqc_star_files).mix(ch_multiqc_hisat2_files).mix(ch_multiqc_kallisto_files).mix(ch_multiqc_star_quant).mix(ch_multiqc_hisat2_quant).collect(),
+            ch_multiqc_config.toList(),
+            ch_multiqc_custom_config.toList(),
+            ch_multiqc_logo.toList(),
+            ch_name_replacements,
+            []
+        )
+        ch_multiqc_report = MULTIQC.out.report
 
     }
 
