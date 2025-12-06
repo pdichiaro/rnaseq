@@ -18,14 +18,16 @@ process GENOME_SECTION_HEADER {
     task.ext.when == null || task.ext.when
 
     script:
+    def section_anchor = "genome-${quantifier.replaceAll('_', '-')}"
     def section_title = quantifier.replaceAll('_', ' ').split(' ').collect { it.capitalize() }.join(' ')
     """
-    cat <<-END_SECTION > ${quantifier}_genome_section_header_mqc.txt
-    # section_id: 'genome_${quantifier}'
-    # section_name: '${section_title} - Genome'
-    # section_anchor: '${quantifier}_genome'
-    # description: 'Genome-level count statistics for ${section_title}'
-    END_SECTION
+    cat > ${quantifier}_genome_section_header_mqc.txt <<HEADER_EOF
+#id: '${section_anchor}'
+#section_name: '${section_title} - Genome'
+#section_anchor: '${section_anchor}'
+#description: 'Genome-level count statistics for ${section_title}'
+#plot_type: 'html'
+HEADER_EOF
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
