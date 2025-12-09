@@ -496,7 +496,12 @@ workflow RNASEQ {
 
             // Generate genome counts text report
             GENOME_COUNTS_REPORT (
-                GENOME_COUNT.out.summary.map { meta, summary -> summary }.collect()
+                GENOME_COUNT.out.transcript_counts.map { meta, file -> file }
+                    .mix(GENOME_COUNT.out.intron_counts.map { meta, file -> file })
+                    .mix(GENOME_COUNT.out.exon_counts.map { meta, file -> file })
+                    .mix(GENOME_COUNT.out.utr5_counts.map { meta, file -> file })
+                    .mix(GENOME_COUNT.out.utr3_counts.map { meta, file -> file })
+                    .collect()
             )
             ch_versions = ch_versions.mix(GENOME_COUNTS_REPORT.out.versions)
 
@@ -654,7 +659,12 @@ workflow RNASEQ {
 
             // Generate genome counts text report
             GENOME_COUNTS_REPORT (
-                GENOME_COUNT.out.summary.map { meta, summary -> summary }.collect()
+                GENOME_COUNT.out.transcript_counts.map { meta, file -> file }
+                    .mix(GENOME_COUNT.out.intron_counts.map { meta, file -> file })
+                    .mix(GENOME_COUNT.out.exon_counts.map { meta, file -> file })
+                    .mix(GENOME_COUNT.out.utr5_counts.map { meta, file -> file })
+                    .mix(GENOME_COUNT.out.utr3_counts.map { meta, file -> file })
+                    .collect()
             )
             ch_versions = ch_versions.mix(GENOME_COUNTS_REPORT.out.versions)
 
