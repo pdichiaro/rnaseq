@@ -57,7 +57,7 @@ for f in all_files:
         samples[sample]['3utr'] = f
 
 def count_reads(filename):
-    """Count total reads in a count file (sum of second column)"""
+    # Count total reads in a count file (sum of second column)
     total = 0
     try:
         with open(filename, 'r') as f:
