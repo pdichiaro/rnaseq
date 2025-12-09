@@ -85,7 +85,9 @@ with open('genome_read_counts.txt', 'w') as out:
     
     # Table header
     out.write("-" * 80 + "\\n")
-    out.write(f"{'Sample':<25} {'Exon':<12} {'Intron':<12} {'5\\'UTR':<12} {'3\\'UTR':<12} {'Transcript':<12}\\n")
+    utr5_label = "5'UTR"
+    utr3_label = "3'UTR"
+    out.write(f"{'Sample':<25} {'Exon':<12} {'Intron':<12} {utr5_label:<12} {utr3_label:<12} {'Transcript':<12}\\n")
     out.write("-" * 80 + "\\n")
     
     # Process each sample
