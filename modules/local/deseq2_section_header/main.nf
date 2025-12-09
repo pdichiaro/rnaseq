@@ -33,9 +33,9 @@ process DESEQ2_SECTION_HEADER {
 HEADER_EOF
 
     cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        bash: \$(bash --version | head -n1 | sed 's/^.*version //; s/ .*\$//')
-    END_VERSIONS
+	"${task.process}":
+	    bash: \$(bash --version | head -n1 | sed 's/^.*version //; s/ .*\$//')
+	END_VERSIONS
     """
 
     stub:
@@ -43,8 +43,8 @@ HEADER_EOF
     touch ${quantifier}_deseq2_section_header_mqc.txt
 
     cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        bash: \$(bash --version | head -n1 | sed 's/^.*version //; s/ .*\$//')
-    END_VERSIONS
+	"${task.process}":
+	    bash: \$(bash --version | head -n1 | sed 's/^.*version //; s/ .*\$//')
+	END_VERSIONS
     """
 }
