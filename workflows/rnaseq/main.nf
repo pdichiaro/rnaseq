@@ -27,6 +27,7 @@ include { MULTIQC_CUSTOM_BIOTYPE             } from '../../modules/local/multiqc
 include { GENOME_COUNT                       } from '../../modules/local/genome_count'
 include { MERGE_GENOME_COUNTS                } from '../../modules/local/merge_genome_counts'
 include { MERGE_GENOME_COUNTS as MERGE_GENOME_COUNTS_HISAT2 } from '../../modules/local/merge_genome_counts'
+include { GENOME_COUNTS_REPORT               } from '../../modules/local/genome_counts_report'
 
 // 
 // MODULE: DeepTools BigWig normalization with DESeq2 scaling factors
@@ -493,6 +494,12 @@ workflow RNASEQ {
             )
             ch_versions = ch_versions.mix(MERGE_GENOME_COUNTS.out.versions)
 
+            // Generate genome counts text report
+            GENOME_COUNTS_REPORT (
+                GENOME_COUNT.out.summary.map { meta, summary -> summary }.collect()
+            )
+            ch_versions = ch_versions.mix(GENOME_COUNTS_REPORT.out.versions)
+
             if (!params.skip_qc & !params.skip_deseq2_qc) {
                 
                 def normalization_methods = params.normalization_method instanceof List ? 
@@ -644,6 +651,12 @@ workflow RNASEQ {
                 ch_annotation_matrix
             )
             ch_versions = ch_versions.mix(MERGE_GENOME_COUNTS_HISAT2.out.versions)
+
+            // Generate genome counts text report
+            GENOME_COUNTS_REPORT (
+                GENOME_COUNT.out.summary.map { meta, summary -> summary }.collect()
+            )
+            ch_versions = ch_versions.mix(GENOME_COUNTS_REPORT.out.versions)
 
             if (!params.skip_qc & !params.skip_deseq2_qc) {
                 
