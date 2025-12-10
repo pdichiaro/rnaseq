@@ -1,6 +1,7 @@
 process GENOME_COUNTS_REPORT {
     tag "genome_counts"
     label 'process_single'
+    publishDir "${params.outdir}/${params.aligner}/genome", mode: params.publish_dir_mode
 
     conda "conda-forge::python=3.9.5"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
