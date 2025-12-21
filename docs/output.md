@@ -44,14 +44,6 @@ star/                          # Aligner directory
 │       │   └── *.norm.bw      # Normalized BigWigs using all_genes factors
 │       └── invariant_genes/   # Normalization method subdirectory
 │           └── *.norm.bw      # Normalized BigWigs using invariant_genes factors
-├── salmon/                    # Quantification subdirectory
-│   ├── [salmon quantification files]
-│   ├── deseq2/                # Analysis type subdirectory
-│   │   ├── all_genes/         # Normalization method subdirectory
-│   │   └── invariant_genes/   # Normalization method subdirectory
-│   └── bigwig_norm/           # Analysis type subdirectory
-│       ├── all_genes/         # Normalization method subdirectory
-│       └── invariant_genes/   # Normalization method subdirectory
 └── genome/                    # Quantification subdirectory
     ├── [genome quantification files] 
     ├── deseq2/                # Analysis type subdirectory
@@ -68,7 +60,6 @@ star/                          # Aligner directory
 
 
 ## Pseudoalignment (--pseudo_aligner kallisto)
-
 ```
 kallisto /
 ├── [common BAM files, logs, general QC] # Shared across all quantification methods
@@ -81,11 +72,6 @@ kallisto /
         ├── all_genes/         # Normalization method subdirectory  
         └── invariant_genes/   # Normalization method subdirectory
 ```
-
-## Pseudoalignment (--pseudo_aligner salmon)
-
-**Note**: SALMON does not generate BAM files.
-
 
 ## Reference Genome Files (if --save_reference)
 ```
@@ -114,7 +100,7 @@ pipeline_info/
 ```
 
 ## Key Notes
-- **NEW STRUCTURE**: STAR uses `star/` base directory with `rsem/`, `salmon/`, `genome/` subdirectories
+- **NEW STRUCTURE**: STAR uses `star/` base directory with `rsem/`, `genome/` subdirectories
 - `<SAMPLE>` represents individual sample names from your samplesheet
 - Many outputs are optional and depend on pipeline parameters (e.g., --save_align_intermeds, --skip_qc)
 - All alignment methods include the same QC outputs (RSeQC, Qualimap, etc.) unless skipped
