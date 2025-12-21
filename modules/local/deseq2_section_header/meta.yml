@@ -1,0 +1,35 @@
+name: "deseq2_section_header"
+description: Creates a section header for organizing DESeq2 QC plots in MultiQC reports
+keywords:
+  - deseq2
+  - multiqc
+  - quality control
+  - section header
+  - visualization
+tools:
+  - custom:
+      description: Custom module for generating MultiQC section headers
+      homepage: https://multiqc.info/
+      documentation: https://docs.seqera.io/multiqc/
+input:
+  - quantifier:
+      type: string
+      description: |
+        The quantifier name (e.g., 'kallisto', 'salmon', 'star_rsem', 'star_salmon', 
+        'star_genome', 'hisat2_genome', etc.) used to identify and organize the section
+      pattern: "[a-zA-Z0-9_-]+"
+output:
+  - section_header:
+      type: file
+      description: |
+        MultiQC-compatible section header file with HTML description and metadata.
+        This file creates a collapsible parent section in the MultiQC report.
+      pattern: "*_deseq2_section_header_mqc.txt"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+authors:
+  - "@seqera-ai"
+maintainers:
+  - "@seqera-ai"

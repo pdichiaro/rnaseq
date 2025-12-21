@@ -1,0 +1,32 @@
+name: KALLISTO_STATS_MERGE
+description: Merge per-sample Kallisto alignment statistics into single MultiQC bargraph
+keywords:
+  - kallisto
+  - stats
+  - alignment
+  - multiqc
+  - merge
+tools:
+  - python:
+      description: Python programming language
+      homepage: https://www.python.org/
+      documentation: https://docs.python.org/3/
+
+input:
+  - stats_files:
+      type: file
+      description: Per-sample Kallisto stats TSV files
+      pattern: "*_kallisto_alignment_stats_mqc.tsv"
+
+output:
+  - multiqc_file:
+      type: file
+      description: Merged MultiQC custom content TSV file with alignment statistics for all samples
+      pattern: "kallisto_alignment_stats_mqc.tsv"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+
+authors:
+  - "@seqeralabs"
