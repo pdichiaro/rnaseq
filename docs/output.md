@@ -105,4 +105,5 @@ pipeline_info/
 - Many outputs are optional and depend on pipeline parameters (e.g., --save_align_intermeds, --skip_qc)
 - All alignment methods include the same QC outputs (RSeQC, Qualimap, etc.) unless skipped
 - DESeq2 normalization is available for all quantification methods
-- MultiQC aggregates all QC results into a single HTML report
+- Multiple aligners (or pseudoaligners) are not implemented   
+
