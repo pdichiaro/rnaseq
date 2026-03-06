@@ -35,6 +35,7 @@ process NORMALIZE_DESEQ2_QC_ALL_GENES {
     def label_lower = args2.toLowerCase()
     def label_upper = args2.toUpperCase()
     prefix = task.ext.prefix ?: "deseq2_all_genes"
+    def vst_flag = params.deseq2_vst ? '--vst TRUE' : ''
     """
     echo "=== DESEQ2 QC DEBUG INFO ==="
     echo "Count file input: $counts"
@@ -43,6 +44,7 @@ process NORMALIZE_DESEQ2_QC_ALL_GENES {
     ls -la
     echo "Count file exists: \$(test -f $counts && echo YES || echo NO)"
     echo "Count file size: \$(wc -l $counts 2>/dev/null || echo 'Cannot read')"
+    echo "Using VST transformation: ${params.deseq2_vst}"
     echo "=========================="
     
     normalize_deseq2_qc_all_genes.r \\
@@ -51,6 +53,7 @@ process NORMALIZE_DESEQ2_QC_ALL_GENES {
         --outprefix "$prefix" \\
         --quantifier "$quantifier" \\
         --cores $task.cpus \\
+        $vst_flag \\
         $args
 
     echo "=== FILES GENERATED FOR MULTIQC ==="
