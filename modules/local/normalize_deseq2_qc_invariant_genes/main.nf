@@ -35,6 +35,7 @@ process NORMALIZE_DESEQ2_QC_INVARIANT_GENES {
     def sigma_times = params.sigma_times ?: '1'
     def n_pop = params.n_pop ?: '1'
     prefix = task.ext.prefix ?: "deseq2_invariant"
+    def vst_flag = params.deseq2_vst ? '--vst TRUE' : ''
     """
     normalize_deseq2_qc_invariant_genes.r \\
         --count_file $counts \\
@@ -44,6 +45,7 @@ process NORMALIZE_DESEQ2_QC_INVARIANT_GENES {
         --sigma_times $sigma_times \\
         --n_pop $n_pop \\
         --cores $task.cpus \\
+        $vst_flag \\
         $args
 
     echo "=== FILES GENERATED FOR MULTIQC ==="
