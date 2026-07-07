@@ -11,9 +11,9 @@
 
 ## Pipeline tools
 
-- [nf-core/chipseq](https://github.com/nf-core/chipseq)
+- [nf-core/chipseq](https://github.com/nf-core/rnaseq)
 
-> https://github.com/nf-core/chipseq. doi: 10.5281/zenodo.3240506
+> https://github.com/nf-core/rnaseq. doi: 10.5281/zenodo.1400710
 
 - [OmniNorm](https://github.com/fgualdr/OmniNorm)
 
