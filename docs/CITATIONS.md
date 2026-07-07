@@ -11,7 +11,7 @@
 
 ## Pipeline tools
 
-- [nf-core/chipseq](https://github.com/nf-core/rnaseq)
+- [nf-core/rnaseq](https://github.com/nf-core/rnaseq)
 
 > https://github.com/nf-core/rnaseq. doi: 10.5281/zenodo.1400710
 
