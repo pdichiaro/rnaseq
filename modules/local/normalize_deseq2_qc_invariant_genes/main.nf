@@ -1,3 +1,10 @@
+/*
+ * It uses OmniNorm for robust normalization of numerical matrices.
+ *
+ * Citation:
+ * Gualdrini F. OmniNorm: Robust normalization of numerical matrices using
+ * skewed mixture models. GitHub repository: https://github.com/fgualdr/OmniNorm
+ */
 process NORMALIZE_DESEQ2_QC_INVARIANT_GENES {
     tag "deseq2_qc_invariant_genes"
     label "process_medium"
