@@ -96,3 +96,13 @@ CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz,a
 - `--save_align_intermeds` - Save intermediate BAMs
 - `--save_merged_fastq` - Save merged FASTQ files
 
+
+#### Acknowledgements
+This pipeline was developed using the nf-core framework and includes modules/components adapted from nf-core pipelines.
+
+The QC/invariant-gene normalization step uses OmniNorm for robust normalization of numerical matrices.
+
+Please cite:
+Ewels PA, Peltzer A, Fillinger S, Patel H, Alneberg J, Wilm A, Garcia MU, Di Tommaso P, Nahnsen S. The nf-core framework for community-curated bioinformatics pipelines. *Nature Biotechnology*. 2020;38(3):276–278. doi: 10.1038/s41587-020-0439-x.
+
+Gualdrini F. OmniNorm: Robust normalization of numerical matrices using skewed mixture models. GitHub repository: https://github.com/fgualdr/OmniNorm
