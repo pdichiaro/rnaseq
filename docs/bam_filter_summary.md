@@ -4,10 +4,18 @@
 
 This document summarizes how aligned reads are retained or excluded after genome alignment in the RNA-seq pipeline when using **STAR** or **HISAT2**.
 
-The key point is that the two aligners are handled differently:
+The key point is that the two aligners now use a more harmonized BAM filtering strategy for **genome-based quantification**:
 
-- **STAR**: filtering is mainly controlled inside STAR through `--outFilter*` alignment parameters. No additional `samtools view` MAPQ/flag filter is applied immediately after STAR alignment.
-- **HISAT2**: HISAT2 output is piped directly into `samtools view`, where unmapped reads, mate-unmapped reads in paired-end mode, and secondary alignments are removed before BAM sorting.
+- **STAR**: multimapping is controlled at the STAR alignment level through `--outFilterMultimapNmax`. In addition, when `params.quantification == 'genome'`, the STAR genome BAM is filtered after alignment with `samtools view`, using the same flag logic adopted for HISAT2. This filter is not applied to RSEM/transcriptome-based quantification.
+- **HISAT2**: HISAT2 output is piped directly into `samtools view`, where unmapped reads, mate-unmapped reads in paired-end mode, secondary alignments and, in paired-end mode, non-proper pairs are removed before BAM sorting.
+
+Important distinction:
+
+```text
+proper-pair filtering ≠ unique-mapping filtering
+```
+
+The `samtools` filters described here clean the BAM at the alignment-flag level. They do **not** guarantee unique-only mapping. Unique/multimapping behavior is controlled separately by the aligner-specific settings.
 
 ---
 
@@ -32,7 +40,7 @@ The key point is that the two aligners are handled differently:
 │    --readFilesCommand zcat                                        │
 │    --outFilterMultimapNmax 20                                     │
 │                                                                   │
-│  Standard mode additionally uses:                                 │
+│  Standard/genome mode additionally uses:                          │
 │    --twopassMode Basic                                            │
 │    --runRNGseed 0                                                 │
 │    --alignSJDBoverhangMin 1                                       │
@@ -56,13 +64,54 @@ The key point is that the two aligners are handled differently:
          ▼
     STAR genome BAM
     ├─ BAM is generated directly by STAR
-    ├─ Multimapping is controlled by --outFilterMultimapNmax 20
-    ├─ Mismatch filtering is stricter in RSEM mode
-    └─ No explicit post-STAR samtools MAPQ filter is applied here
+    ├─ Multimapping is controlled by --outFilterMultimapNmax
+    ├─ Default allows multimappers up to 20 loci
+    └─ Optional unique-only mode can be set with --outFilterMultimapNmax 1
          │
          ▼
 ┌───────────────────────────────────────────────────────────────────┐
-│  STEP 2: BAM_SORT_STATS_SAMTOOLS                                  │
+│  STEP 2: CONDITIONAL STAR BAM FILTERING                           │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━     │
+│                                                                   │
+│  Applied only when:                                               │
+│                                                                   │
+│    params.quantification == 'genome'                              │
+│                                                                   │
+│  Single-end filtering:                                            │
+│                                                                   │
+│    samtools view -bS -F 4 -F 256 \                                │
+│      sample.Aligned.out.bam > sample.Aligned.filtered.out.bam      │
+│                                                                   │
+│  Removes:                                                         │
+│    -F 4     unmapped reads                                        │
+│    -F 256   secondary alignments                                  │
+│                                                                   │
+│  Paired-end filtering:                                            │
+│                                                                   │
+│    samtools view -bS -f 2 -F 4 -F 8 -F 256 \                      │
+│      sample.Aligned.out.bam > sample.Aligned.filtered.out.bam      │
+│                                                                   │
+│  Keeps/removes:                                                   │
+│    -f 2     keep only proper pairs                                │
+│    -F 4     remove unmapped reads                                 │
+│    -F 8     remove reads with unmapped mate                       │
+│    -F 256   remove secondary alignments                           │
+│                                                                   │
+│  The filtered BAM replaces the original Aligned.out.bam name       │
+│  so that downstream steps receive the filtered genome BAM.         │
+└───────────────────────────────────────────────────────────────────┘
+         │
+         ▼
+    filtered STAR genome BAM
+    ├─ No unmapped reads
+    ├─ No secondary alignments
+    ├─ No mate-unmapped reads in paired-end mode
+    ├─ Proper pairs only in paired-end mode
+    └─ Multimappers may still be present unless STAR is run unique-only
+         │
+         ▼
+┌───────────────────────────────────────────────────────────────────┐
+│  STEP 3: BAM_SORT_STATS_SAMTOOLS                                  │
 │  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━     │
 │                                                                   │
 │  samtools sort                                                    │
@@ -78,11 +127,11 @@ The key point is that the two aligners are handled differently:
     sorted STAR BAM
     ├─ Sorted and indexed
     ├─ QC metrics generated
-    └─ Reads are not additionally filtered by MAPQ or SAM flags here
+    └─ For genome quantification, this BAM derives from the filtered BAM
          │
          ▼
 ┌───────────────────────────────────────────────────────────────────┐
-│  STEP 3: OPTIONAL DEDUPLICATION / DUPLICATE MARKING               │
+│  STEP 4: OPTIONAL DEDUPLICATION / DUPLICATE MARKING               │
 │  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━     │
 │                                                                   │
 │  If params.with_umi = true:                                       │
@@ -104,31 +153,86 @@ The key point is that the two aligners are handled differently:
 
 | Parameter | Meaning | Effect |
 |----------|---------|--------|
-| `--outFilterMultimapNmax 20` | Maximum number of loci a read can map to | Reads mapping to more than 20 loci are excluded by STAR |
+| `--outFilterMultimapNmax 20` | Maximum number of loci a read can map to | Default STAR behavior in this pipeline; reads mapping to more than 20 loci are excluded by STAR |
+| `--outFilterMultimapNmax 1` | Strict unique-mapping mode | Optional setting; only uniquely mapping reads are reported |
 | `--outFilterType BySJout` | Splice-junction-aware filtering | Used in RSEM-compatible mode |
 | `--outFilterMismatchNmax 999` | Absolute mismatch limit | Effectively permissive absolute mismatch threshold |
 | `--outFilterMismatchNoverLmax 0.04` | Mismatch fraction threshold | In RSEM-compatible mode, reads with mismatch fraction above 4% are excluded |
 | `--outSAMtype BAM Unsorted` | BAM output | STAR writes an unsorted BAM directly |
 | `--outSAMattributes NH HI AS NM MD` | SAM tags | Keeps multimapping and alignment score/mismatch tags useful for downstream QC |
 
-### What STAR does **not** do in this pipeline
+### STAR `extra_star_align_args`
 
-The STAR branch does **not** apply an additional post-alignment command such as:
+STAR multimapping behavior can be changed through:
 
 ```bash
-samtools view -q <MAPQ> -F <FLAGS>
+--extra_star_align_args "--outFilterMultimapNmax 1"
 ```
 
-Therefore, in the default STAR workflow there is no explicit post-STAR:
+This overrides the default multimapping threshold and runs STAR in strict unique-mapping mode.
 
-- MAPQ threshold
-- removal of secondary alignments by `samtools view -F 256`
-- removal of supplementary alignments by `samtools view -F 2048`
-- proper-pair filtering by `samtools view -f 2`
-- insert-size / fragment-length filtering
-- blacklist-region filtering
+Default behavior:
 
-Filtering is therefore primarily determined by STAR alignment parameters and by any user-provided `params.extra_star_align_args`.
+```bash
+--outFilterMultimapNmax 20
+```
+
+Strict unique-only behavior:
+
+```bash
+--outFilterMultimapNmax 1
+```
+
+### STAR post-alignment BAM filtering
+
+For genome-based quantification only, the STAR BAM is filtered after alignment.
+
+Single-end:
+
+```bash
+samtools view -bS -F 4 -F 256 sample.Aligned.out.bam > sample.Aligned.filtered.out.bam
+mv sample.Aligned.filtered.out.bam sample.Aligned.out.bam
+```
+
+Paired-end:
+
+```bash
+samtools view -bS -f 2 -F 4 -F 8 -F 256 sample.Aligned.out.bam > sample.Aligned.filtered.out.bam
+mv sample.Aligned.filtered.out.bam sample.Aligned.out.bam
+```
+
+This post-alignment filter:
+
+- removes unmapped reads;
+- removes secondary alignments;
+- removes mate-unmapped reads in paired-end mode;
+- retains only proper pairs in paired-end mode.
+
+This filter does **not** remove multimappers by itself. Multimappers are controlled by `--outFilterMultimapNmax`.
+
+### RSEM-specific note
+
+When `params.quantification != 'genome'`, for example in RSEM/transcriptome-based quantification, this STAR BAM filter is not applied.
+
+This is intentional: RSEM uses multimapping and ambiguous reads probabilistically for abundance estimation. Therefore, unique-only or proper-pair filtering should not be applied before RSEM quantification.
+
+---
+
+## Important note on STAR `flagstat`
+
+For STAR-aligned BAM files, `samtools flagstat` should not be used as the main estimate of the original FASTQ mapping rate.
+
+If unmapped reads are not written into the BAM, `flagstat` may report nearly 100% mapped reads because it only sees alignments present in the BAM. The correct STAR mapping summary should be read from `Log.final.out`, especially:
+
+- `Number of input reads`
+- `Uniquely mapped reads number`
+- `Uniquely mapped reads %`
+- `Number of reads mapped to multiple loci`
+- `% of reads mapped to multiple loci`
+- `Number of reads mapped to too many loci`
+- `% of reads mapped to too many loci`
+
+For paired-end data, STAR reports input reads as read pairs/fragments, while `samtools flagstat` counts BAM records. Therefore, 52M input read pairs in STAR may correspond to about 104M BAM records in `flagstat`.
 
 ---
 
@@ -154,6 +258,12 @@ Filtering is therefore primarily determined by STAR alignment parameters and by 
 │      --no-mixed                                                   │
 │      --no-discordant                                              │
 │                                                                   │
+│  Default args:                                                    │
+│    --met-stderr --new-summary --dta                               │
+│                                                                   │
+│  Optional extra args:                                             │
+│    params.extra_hisat2_align_args                                 │
+│                                                                   │
 │  Output: SAM stream                                               │
 └───────────────────────────────────────────────────────────────────┘
          │
@@ -175,12 +285,13 @@ Filtering is therefore primarily determined by STAR alignment parameters and by 
 │                                                                   │
 │  Paired-end filtering:                                            │
 │                                                                   │
-│    samtools view -bS -F 4 -F 8 -F 256 - > sample.bam              │
+│    samtools view -bS -f 2 -F 4 -F 8 -F 256 - > sample.bam          │
 │                                                                   │
-│  Removes:                                                         │
-│    -F 4     unmapped reads                                        │
-│    -F 8     reads with unmapped mate                              │
-│    -F 256   secondary alignments                                  │
+│  Keeps/removes:                                                   │
+│    -f 2     keep only proper pairs                                │
+│    -F 4     remove unmapped reads                                 │
+│    -F 8     remove reads with unmapped mate                       │
+│    -F 256   remove secondary alignments                           │
 │                                                                   │
 │  Additional HISAT2 paired-end constraints:                        │
 │    --no-mixed       suppress unpaired/mixed alignments             │
@@ -192,6 +303,7 @@ Filtering is therefore primarily determined by STAR alignment parameters and by 
     ├─ No unmapped reads
     ├─ No secondary alignments
     ├─ No mate-unmapped reads in paired-end mode
+    ├─ Proper pairs only in paired-end mode
     ├─ No mixed alignments in paired-end mode
     └─ No discordant alignments in paired-end mode
          │
@@ -260,17 +372,60 @@ hisat2 \
     --no-mixed \
     --no-discordant \
     $args \
-| samtools view -bS -F 4 -F 8 -F 256 - > sample.bam
+| samtools view -bS -f 2 -F 4 -F 8 -F 256 - > sample.bam
+```
+
+### HISAT2 default and extra args
+
+The default HISAT2 arguments are:
+
+```bash
+--met-stderr --new-summary --dta
+```
+
+Meaning:
+
+- `--met-stderr`: prints HISAT2 internal metrics to `stderr`;
+- `--new-summary`: reports the alignment summary in the newer, machine-friendly format;
+- `--dta`: reports alignments tailored for downstream transcriptome assembly, for example StringTie.
+
+Additional HISAT2 arguments can be passed through:
+
+```groovy
+params.extra_hisat2_align_args
+```
+
+The final HISAT2 arguments are built as:
+
+```groovy
+ext.args = [
+    '--met-stderr --new-summary --dta',
+    params.extra_hisat2_align_args ?: ''
+].join(' ').trim()
+```
+
+Example:
+
+```bash
+--extra_hisat2_align_args "-k 10"
+```
+
+This produces:
+
+```bash
+--met-stderr --new-summary --dta -k 10
 ```
 
 ---
 
-## SAM flag reference for HISAT2 filtering
+## SAM flag reference for STAR and HISAT2 BAM filtering
 
-| Flag | Hex | Meaning | Action in HISAT2 branch |
-|------|-----|---------|--------------------------|
+| Flag | Hex | Meaning | Action in pipeline |
+|------|-----|---------|--------------------|
+| `2` | `0x0002` | Proper pair | Kept in paired-end mode with `-f 2` |
 | `4` | `0x0004` | Read unmapped | Removed in single-end and paired-end |
 | `8` | `0x0008` | Mate unmapped | Removed in paired-end only |
 | `256` | `0x0100` | Secondary alignment | Removed in single-end and paired-end |
 
 ---
+
