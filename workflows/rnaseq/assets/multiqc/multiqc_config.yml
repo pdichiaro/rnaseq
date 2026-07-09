@@ -210,3 +210,50 @@ fn_ignore_files:
 
 # DESeq2 plots now handled dynamically by DESEQ2_TRANSFORM module headers
 # The module adds parent_id/parent_name for all quantifiers automatically
+
+table_columns_visible:
+  # FastQC modules - use full module names from module_order
+  "FastQC (raw)":
+    total_sequences: True
+    percent_duplicates: False
+    percent_gc: False
+    avg_sequence_length: False
+    percent_fails: False
+    total_sequences_unit: False
+  "FastQC (trimmed)":
+    total_sequences: True
+    percent_duplicates: False
+    percent_gc: False
+    avg_sequence_length: False
+    percent_fails: False
+    total_sequences_unit: False
+  # Cutadapt - show trimming efficiency
+  "cutadapt (trimmed)":
+    percent_trimmed: True
+    pairs_trimmed: False
+  # SAMTools modules - use full module names from module_order
+  "SAMTools: stats":
+    reads_mapped: True
+    reads_mapped_percent: True
+    error_rate: True
+    reads_MQ0_percent: True
+    non-primary_alignments: True
+    reads_properly_paired_percent: True
+    raw_total_sequences: True
+  "SAMTools: flagstat":
+    mapped_passed: False
+    mapped_passed_pct: False
+  # Picard modules
+  "Picard (unfiltered): Mark Duplicates":
+    PERCENT_DUPLICATION: True
+  "Picard (filtered): InsertSizeMetrics":
+    Insert Size: False
+    Mean Insert: False
+  # featureCounts - show assignment metrics
+  "featureCounts":
+    percent_assigned: True
+    Assigned: True
+    Unassigned_NoFeatures: False
+    Unassigned_Ambiguity: False
+    Unassigned_MultiMapping: False
+
