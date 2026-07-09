@@ -232,7 +232,7 @@ table_columns_visible:
     percent_trimmed: True
     pairs_trimmed: False
   # SAMTools modules - use full module names from module_order
-  "SAMTools: stats":
+  "Samtools: stats":
     reads_mapped: True
     reads_mapped_percent: True
     error_rate: True
@@ -240,15 +240,21 @@ table_columns_visible:
     non-primary_alignments: True
     reads_properly_paired_percent: True
     raw_total_sequences: True
-  "SAMTools: flagstat":
+  "Samtools: flagstat":
+    flagstat_total: False
     mapped_passed: False
     mapped_passed_pct: False
   # Picard modules
-  "Picard (unfiltered): Mark Duplicates":
-    PERCENT_DUPLICATION: True
-  "Picard (filtered): InsertSizeMetrics":
-    Insert Size: False
-    Mean Insert: False
+  "Picard: Mark Duplicates":
+    Duplication: True
+  #RSeQC modules
+  "RSeQC: Bam Stat":
+    proper_pairs_percent: False
+  #QualiMap modules
+  "QualiMap: RNAseq":
+    5_3_bias: False
+    reads_aligned: False
+    reads_aligned_exonic: False
   # featureCounts - show assignment metrics
   "featureCounts":
     percent_assigned: True
@@ -256,4 +262,17 @@ table_columns_visible:
     Unassigned_NoFeatures: False
     Unassigned_Ambiguity: False
     Unassigned_MultiMapping: False
+  # Custom contents: DupRadar
+  "Custom content: DupRadar":
+    dupRadar_intercept: False
+  "Custom content: Biotype Counts":
+    percent_rRNA: False
+  # STAR modules
+  "STAR":
+    mapped: False
+    mapped_percent: False
+    uniquely_mapped: False
+    uniquely_mapped_percent: False
+    multimapped: False
+  
 
