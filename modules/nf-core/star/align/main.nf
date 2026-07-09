@@ -50,6 +50,26 @@ process STAR_ALIGN {
     attrRG          = args.contains("--outSAMattrRGline") ? "" : "--outSAMattrRGline 'ID:$prefix' $seq_center_arg 'SM:$prefix' $seq_platform_arg"
     def out_sam_type    = (args.contains('--outSAMtype')) ? '' : '--outSAMtype BAM Unsorted'
     mv_unsorted_bam = (args.contains('--outSAMtype BAM Unsorted SortedByCoordinate')) ? "mv ${prefix}.Aligned.out.bam ${prefix}.Aligned.unsort.out.bam" : ''
+    
+    def filter_star_bam = ''
+    if (params.quantification == 'genome') {
+        if (meta.single_end) {
+            filter_star_bam = """
+            if [ -f ${prefix}.Aligned.out.bam ]; then
+                samtools view -bS -F 4 -F 256 ${prefix}.Aligned.out.bam > ${prefix}.Aligned.filtered.out.bam
+                mv ${prefix}.Aligned.filtered.out.bam ${prefix}.Aligned.out.bam
+            fi
+            """
+        } else {
+            filter_star_bam = """
+            if [ -f ${prefix}.Aligned.out.bam ]; then
+                samtools view -bS -f 2 -F 4 -F 8 -F 256 ${prefix}.Aligned.out.bam > ${prefix}.Aligned.filtered.out.bam
+                mv ${prefix}.Aligned.filtered.out.bam ${prefix}.Aligned.out.bam
+            fi
+            """
+        }
+    }
+
     """
     STAR \\
         --genomeDir $index \\
@@ -60,6 +80,8 @@ process STAR_ALIGN {
         $ignore_gtf \\
         $attrRG \\
         $args
+
+    $filter_star_bam
 
     $mv_unsorted_bam
 
